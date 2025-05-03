@@ -20,7 +20,7 @@ namespace Grassroots.Infrastructure.Data
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<GrassrootsDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.MigrateAsync();
 
             // 检查是否有任何待办事项，没有则添加示例数据

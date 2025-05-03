@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Grassroots.Infrastructure.Migrations
 {
-    [DbContext(typeof(GrassrootsDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20250502171031_AddIsDeletedField")]
     partial class AddIsDeletedField
     {
