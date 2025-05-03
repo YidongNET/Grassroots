@@ -20,6 +20,82 @@ Grassroots框架采用分层架构，每一层都有其特定的职责：
 4. **模型层**（Grassroots.Model）：定义实体和值对象
 5. **基础设施层**（Grassroots.Infrastructure）：提供技术细节实现，如数据库访问、消息队列等
 
+## 项目结构与依赖关系
+
+### 项目概览
+
+1. **Grassroots.Model** - 模型层
+   - 包含DTO、实体定义和映射接口
+   - 最基础的项目，不依赖其他项目
+   - 目录结构：
+     - `Dto/`: 数据传输对象
+     - `Entities/`: 基础实体定义
+     - `Mapping/`: 对象映射接口
+
+2. **Grassroots.Domain** - 领域层
+   - 包含领域实体、聚合根、值对象、领域事件和仓储接口
+   - 依赖: `Grassroots.Model`
+   - 目录结构：
+     - `AggregateRoots/`: 聚合根定义
+     - `Entities/`: 领域实体
+     - `Entity/`: 实体基础类
+     - `Events/`: 领域事件
+     - `Repositories/`: 仓储接口
+     - `ValueObjects/`: 值对象
+
+3. **Grassroots.Application** - 应用层
+   - 包含命令、查询、处理器和调度器接口
+   - 依赖: `Grassroots.Domain`, `Grassroots.Model`
+   - 目录结构：
+     - `Commands/`: 命令和命令处理器接口
+     - `Dispatchers/`: 命令和查询调度器接口
+     - `Queries/`: 查询和查询处理器接口
+
+4. **Grassroots.Infrastructure** - 基础设施层
+   - 包含EF Core DbContext、仓储实现、命令和查询的具体实现、自动映射等
+   - 依赖: `Grassroots.Application`, `Grassroots.Domain`, `Grassroots.Model`
+   - 目录结构：
+     - `Commands/`: 命令实现
+     - `Data/`: 数据访问和DbContext
+     - `DependencyInjection/`: 依赖注入配置
+     - `Extensions/`: 服务注册扩展方法
+     - `Mapping/`: 自动映射实现
+     - `Migrations/`: 数据库迁移
+     - `Queries/`: 查询实现
+     - `Repositories/`: 仓储实现
+
+5. **Grassroots.Api** - API层(用户界面层)
+   - 包含控制器和程序入口点
+   - 依赖: `Grassroots.Application`, `Grassroots.Infrastructure`, `Grassroots.Model`
+   - 目录结构：
+     - `Controllers/`: API控制器
+     - `Program.cs`: 应用程序入口点和配置
+
+### 依赖关系图
+
+```
+Grassroots.Api
+    ├── Grassroots.Application
+    │       ├── Grassroots.Domain
+    │       │       └── Grassroots.Model
+    │       └── Grassroots.Model
+    ├── Grassroots.Infrastructure
+    │       ├── Grassroots.Application
+    │       │       ├── Grassroots.Domain
+    │       │       │       └── Grassroots.Model
+    │       │       └── Grassroots.Model
+    │       ├── Grassroots.Domain
+    │       │       └── Grassroots.Model
+    │       └── Grassroots.Model
+    └── Grassroots.Model
+```
+
+### 服务注册流程
+
+1. `AddInfrastructure` - 注册基础设施服务，包括命令/查询调度器和AutoMapper
+2. `AddApplication` - 注册应用层服务，包括命令和查询处理器
+3. `AddDatabaseServices` - 注册数据库相关服务，包括DbContext和仓储
+
 ## 特性
 
 - 基于.NET 8平台
@@ -70,15 +146,7 @@ cd Grassroots.Infrastructure
 dotnet ef database update --startup-project ../Grassroots.Api
 ```
 
-## 项目结构
-
-- **Grassroots.Api**：Web API项目，处理HTTP请求
-- **Grassroots.Application**：应用服务，实现用例和业务流程
-- **Grassroots.Domain**：领域层，包含领域模型、领域服务和业务规则
-- **Grassroots.Model**：模型定义，包含实体和值对象
-- **Grassroots.Infrastructure**：基础设施实现，如数据库访问、日志、消息等
-
-## 如何使用
+## 运行说明
 
 ### 前提条件
 
@@ -89,7 +157,7 @@ dotnet ef database update --startup-project ../Grassroots.Api
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/your-username/Grassroots.git
+git clone https://github.com/YidongNET/Grassroots.git
 cd Grassroots
 ```
 
