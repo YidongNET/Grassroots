@@ -1,5 +1,6 @@
 using Grassroots.Infrastructure.Data;
 using Grassroots.Infrastructure.DependencyInjection;
+using Grassroots.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,9 @@ using System.IO;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 添加数据库服务 - 这里会注册DbContext和Repository
+builder.Services.AddDatabaseServices(builder.Configuration);
 
 // 添加服务到容器
 builder.Services.AddControllers();
@@ -40,7 +44,7 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
-// 添加框架服务
+// 添加其他框架服务 - 命令和查询分发器，以及自动映射
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 

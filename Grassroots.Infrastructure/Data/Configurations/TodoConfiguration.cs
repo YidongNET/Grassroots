@@ -1,4 +1,4 @@
-using Grassroots.Domain.Entities;
+using Grassroots.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,16 +16,13 @@ namespace Grassroots.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Todo> builder)
         {
             // 基本属性配置
-            builder.Property(t => t.Title).IsRequired().HasMaxLength(100);
-            builder.Property(t => t.Description).HasMaxLength(500);
+            builder.Property(t => t.Title).IsRequired().HasMaxLength(200);
+            builder.Property(t => t.Description).HasMaxLength(1000);
             builder.Property(t => t.IsCompleted).IsRequired();
             builder.Property(t => t.DueDate).IsRequired(false);
             
             // 设置表名
             builder.ToTable("Todos");
-            
-            // 忽略领域事件集合
-            builder.Ignore(t => t.DomainEvents);
         }
     }
 } 

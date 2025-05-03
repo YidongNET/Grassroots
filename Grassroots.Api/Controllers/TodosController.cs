@@ -7,6 +7,9 @@ using Grassroots.Application.Queries;
 using Grassroots.Model.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Grassroots.Domain.Repositories;
+using Grassroots.Model.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Grassroots.Api.Controllers
 {
@@ -17,6 +20,13 @@ namespace Grassroots.Api.Controllers
     [Route("api/[controller]")]
     public class TodosController : ApiBaseController
     {
+        private readonly IRepository<Todo> _todoRepository;
+
+        public TodosController(IRepository<Todo> todoRepository)
+        {
+            _todoRepository = todoRepository;
+        }
+
         /// <summary>
         /// 获取所有待办事项
         /// </summary>

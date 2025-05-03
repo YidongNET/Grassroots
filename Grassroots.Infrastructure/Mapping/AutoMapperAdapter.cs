@@ -1,21 +1,22 @@
 using AutoMapper;
 using Grassroots.Model.Mapping;
 using IMapperInterface = Grassroots.Model.Mapping.IMapper;
+using IAutoMapperInterface = AutoMapper.IMapper;
 
 namespace Grassroots.Infrastructure.Mapping
 {
     /// <summary>
     /// AutoMapper适配器
     /// </summary>
-    public class AutoMapperAdapter : Model.Mapping.IMapper
+    public class AutoMapperAdapter : IMapperInterface
     {
-        private readonly AutoMapper.IMapper _mapper;
+        private readonly IAutoMapperInterface _mapper;
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="mapper">AutoMapper实例</param>
-        public AutoMapperAdapter(AutoMapper.IMapper mapper)
+        public AutoMapperAdapter(IAutoMapperInterface mapper)
         {
             _mapper = mapper;
         }
@@ -29,7 +30,7 @@ namespace Grassroots.Infrastructure.Mapping
         /// <returns>目标对象</returns>
         public TDestination Map<TSource, TDestination>(TSource source)
         {
-            return _mapper.Map<TSource, TDestination>(source);
+            return _mapper.Map<TDestination>(source);
         }
 
         /// <summary>
