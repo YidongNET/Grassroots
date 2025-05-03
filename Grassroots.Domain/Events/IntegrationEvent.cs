@@ -4,29 +4,19 @@ using System.Text.Json;
 namespace Grassroots.Domain.Events
 {
     /// <summary>
-    /// 领域事件基类
+    /// 集成事件基类
     /// </summary>
-    public abstract class DomainEvent
+    public abstract class IntegrationEvent
     {
         /// <summary>
         /// 事件ID
         /// </summary>
         public Guid Id { get; }
-        
+
         /// <summary>
         /// 事件发生时间
         /// </summary>
-        public DateTime OccurredOn { get; }
-
-        /// <summary>
-        /// 聚合根ID
-        /// </summary>
-        public string AggregateId { get; protected set; }
-
-        /// <summary>
-        /// 聚合根类型
-        /// </summary>
-        public string AggregateType { get; protected set; }
+        public DateTime CreationDate { get; }
 
         /// <summary>
         /// 事件类型
@@ -34,27 +24,15 @@ namespace Grassroots.Domain.Events
         public string EventType => GetType().Name;
 
         /// <summary>
-        /// 事件版本
-        /// </summary>
-        public int Version { get; protected set; }
-
-        /// <summary>
         /// 事件元数据
         /// </summary>
         public JsonDocument Metadata { get; private set; }
 
-        protected DomainEvent()
+        protected IntegrationEvent()
         {
             Id = Guid.NewGuid();
-            OccurredOn = DateTime.UtcNow;
+            CreationDate = DateTime.UtcNow;
             Metadata = JsonDocument.Parse("{}");
-        }
-
-        protected DomainEvent(string aggregateId, string aggregateType, int version) : this()
-        {
-            AggregateId = aggregateId;
-            AggregateType = aggregateType;
-            Version = version;
         }
 
         /// <summary>

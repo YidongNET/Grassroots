@@ -17,14 +17,14 @@ namespace Grassroots.Infrastructure.Repositories
     /// <typeparam name="T">实体类型</typeparam>
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
-        protected readonly GrassrootsDbContext _dbContext;
+        protected readonly AppDbContext _dbContext;
         protected readonly DbSet<T> _dbSet;
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="dbContext">数据库上下文</param>
-        public Repository(GrassrootsDbContext dbContext)
+        public Repository(AppDbContext dbContext)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _dbSet = _dbContext.Set<T>();

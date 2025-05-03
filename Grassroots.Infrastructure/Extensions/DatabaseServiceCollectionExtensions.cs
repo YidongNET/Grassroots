@@ -32,9 +32,9 @@ namespace Grassroots.Infrastructure.Extensions
             var providerType = configuration.GetValue<string>("Database:ProviderType") ?? "SqlServer";
 
             // 添加DbContext
-            services.AddDbContext<GrassrootsDbContext>(options =>
+            services.AddDbContext<AppDbContext>(options =>
             {
-                GrassrootsDbContextFactory.ConfigureDbProvider(options, providerType, connectionString);
+                AppDbContextFactory.ConfigureDbProvider(options, providerType, connectionString);
             });
 
             // 注册仓储
