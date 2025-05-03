@@ -1,5 +1,5 @@
 using AutoMapper;
-using Grassroots.Domain.Entities;
+using Grassroots.Model.Entities;
 using Grassroots.Model.DTO;
 
 namespace Grassroots.Infrastructure.Mapping
@@ -10,14 +10,27 @@ namespace Grassroots.Infrastructure.Mapping
     public class MappingProfile : Profile
     {
         /// <summary>
-        /// 构造函数，配置映射
+        /// 构造函数
         /// </summary>
         public MappingProfile()
         {
-            // 实体 -> DTO
-            CreateMap<Todo, TodoDto>();
+            // 实体到DTO的映射
+            CreateMap<Todo, TodoDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => src.IsCompleted))
+                .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueDate))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
             
-            // DTO -> 实体 (不使用，因为实体创建需要通过构造函数)
+            // DTO到实体的映射
+            CreateMap<TodoDto, Todo>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => src.IsCompleted))
+                .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueDate));
         }
     }
 } 

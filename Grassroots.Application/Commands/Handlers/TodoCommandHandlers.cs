@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Grassroots.Domain.Entities;
+using Grassroots.Model.Entities;
 using Grassroots.Domain.Repositories;
 
 namespace Grassroots.Application.Commands.Handlers
@@ -30,8 +30,14 @@ namespace Grassroots.Application.Commands.Handlers
         /// <returns>创建的待办事项ID</returns>
         public async Task<Guid> HandleAsync(CreateTodoCommand command, CancellationToken cancellationToken = default)
         {
-            var todo = new Todo(command.Title, command.Description, command.DueDate);
-            await _repository.AddAsync(todo, cancellationToken);
+            var todo = new Todo
+            {
+                Title = command.Title,
+                Description = command.Description,
+                DueDate = command.DueDate
+            };
+            await _repository.AddAsync(todo);
+            await _repository.SaveChangesAsync();
             return todo.Id;
         }
     }
@@ -60,12 +66,16 @@ namespace Grassroots.Application.Commands.Handlers
         /// <returns>操作结果</returns>
         public async Task HandleAsync(UpdateTodoCommand command, CancellationToken cancellationToken = default)
         {
-            var todo = await _repository.GetByIdAsync(command.Id, cancellationToken);
+            var todo = await _repository.GetByIdAsync(command.Id);
             if (todo == null)
                 throw new ArgumentException($"待办事项不存在: {command.Id}", nameof(command.Id));
 
-            todo.Update(command.Title, command.Description, command.DueDate);
-            await _repository.UpdateAsync(todo, cancellationToken);
+            todo.Title = command.Title;
+            todo.Description = command.Description;
+            todo.DueDate = command.DueDate;
+            
+            await _repository.UpdateAsync(todo);
+            await _repository.SaveChangesAsync();
         }
     }
 
@@ -93,12 +103,13 @@ namespace Grassroots.Application.Commands.Handlers
         /// <returns>操作结果</returns>
         public async Task HandleAsync(CompleteTodoCommand command, CancellationToken cancellationToken = default)
         {
-            var todo = await _repository.GetByIdAsync(command.Id, cancellationToken);
+            var todo = await _repository.GetByIdAsync(command.Id);
             if (todo == null)
                 throw new ArgumentException($"待办事项不存在: {command.Id}", nameof(command.Id));
 
-            todo.MarkAsCompleted();
-            await _repository.UpdateAsync(todo, cancellationToken);
+            todo.IsCompleted = true;
+            await _repository.UpdateAsync(todo);
+            await _repository.SaveChangesAsync();
         }
     }
 
@@ -126,11 +137,12 @@ namespace Grassroots.Application.Commands.Handlers
         /// <returns>操作结果</returns>
         public async Task HandleAsync(DeleteTodoCommand command, CancellationToken cancellationToken = default)
         {
-            var todo = await _repository.GetByIdAsync(command.Id, cancellationToken);
+            var todo = await _repository.GetByIdAsync(command.Id);
             if (todo == null)
                 throw new ArgumentException($"待办事项不存在: {command.Id}", nameof(command.Id));
 
-            await _repository.DeleteAsync(todo, cancellationToken);
+            await _repository.DeleteAsync(todo);
+            await _repository.SaveChangesAsync();
         }
     }
 } 

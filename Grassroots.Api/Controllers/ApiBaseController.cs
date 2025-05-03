@@ -11,17 +11,19 @@ namespace Grassroots.Api.Controllers
     [Route("api/[controller]")]
     public abstract class ApiBaseController : ControllerBase
     {
-        private ICommandDispatcher _commandDispatcher;
-        private IQueryDispatcher _queryDispatcher;
+        private ICommandDispatcher? _commandDispatcher;
+        private IQueryDispatcher? _queryDispatcher;
 
         /// <summary>
         /// 命令分发器
         /// </summary>
-        protected ICommandDispatcher CommandDispatcher => _commandDispatcher ??= HttpContext.RequestServices.GetService<ICommandDispatcher>();
+        protected ICommandDispatcher CommandDispatcher => 
+            _commandDispatcher ??= HttpContext.RequestServices.GetRequiredService<ICommandDispatcher>();
 
         /// <summary>
         /// 查询分发器
         /// </summary>
-        protected IQueryDispatcher QueryDispatcher => _queryDispatcher ??= HttpContext.RequestServices.GetService<IQueryDispatcher>();
+        protected IQueryDispatcher QueryDispatcher => 
+            _queryDispatcher ??= HttpContext.RequestServices.GetRequiredService<IQueryDispatcher>();
     }
 } 

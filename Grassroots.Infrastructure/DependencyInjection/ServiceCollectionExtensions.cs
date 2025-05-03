@@ -4,8 +4,7 @@ using Grassroots.Application.Dispatchers;
 using Grassroots.Application.Queries;
 using Grassroots.Domain.Repositories;
 using Grassroots.Infrastructure.Commands;
-using Grassroots.Infrastructure.Data.DbContext;
-using Grassroots.Infrastructure.Data.Repositories;
+using Grassroots.Infrastructure.Data;
 using Grassroots.Infrastructure.Mapping;
 using Grassroots.Infrastructure.Queries;
 using Grassroots.Model.Mapping;
@@ -20,7 +19,7 @@ namespace Grassroots.Infrastructure.DependencyInjection
     /// 服务集合扩展
     /// </summary>
     public static class ServiceCollectionExtensions
-    {
+    {        
         /// <summary>
         /// 添加基础设施服务
         /// </summary>
@@ -29,15 +28,6 @@ namespace Grassroots.Infrastructure.DependencyInjection
         /// <returns>服务集合</returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // 注册数据库上下文
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-
-            // 注册仓储
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
             // 注册命令和查询分发器
             services.AddScoped<ICommandDispatcher, CommandDispatcher>();
             services.AddScoped<IQueryDispatcher, QueryDispatcher>();

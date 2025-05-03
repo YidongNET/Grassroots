@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Grassroots.Domain.Entities;
+using Grassroots.Model.Entities;
 using Grassroots.Domain.Repositories;
 using Grassroots.Model.DTO;
-using Grassroots.Model.Mapping;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Grassroots.Application.Queries.Handlers
 {
@@ -37,8 +38,8 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetAllTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.GetAllAsync(cancellationToken);
-            return todos.Select(todo => _mapper.Map<Todo, TodoDto>(todo));
+            var todos = await _repository.GetAll().ToListAsync(cancellationToken);
+            return _mapper.Map<List<TodoDto>>(todos);
         }
     }
 
@@ -69,11 +70,11 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<TodoDto> HandleAsync(GetTodoByIdQuery query, CancellationToken cancellationToken = default)
         {
-            var todo = await _repository.GetByIdAsync(query.Id, cancellationToken);
+            var todo = await _repository.GetByIdAsync(query.Id);
             if (todo == null)
                 throw new ArgumentException($"待办事项不存在: {query.Id}", nameof(query.Id));
 
-            return _mapper.Map<Todo, TodoDto>(todo);
+            return _mapper.Map<TodoDto>(todo);
         }
     }
 
@@ -104,8 +105,8 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetCompletedTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.FindAsync(t => t.IsCompleted, cancellationToken);
-            return todos.Select(todo => _mapper.Map<Todo, TodoDto>(todo));
+            var todos = await _repository.Find(t => t.IsCompleted).ToListAsync(cancellationToken);
+            return _mapper.Map<List<TodoDto>>(todos);
         }
     }
 
@@ -136,8 +137,8 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetIncompleteTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.FindAsync(t => !t.IsCompleted, cancellationToken);
-            return todos.Select(todo => _mapper.Map<Todo, TodoDto>(todo));
+            var todos = await _repository.Find(t => !t.IsCompleted).ToListAsync(cancellationToken);
+            return _mapper.Map<List<TodoDto>>(todos);
         }
     }
 } 
