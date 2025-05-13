@@ -8,13 +8,21 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Reflection;
+// 添加Autofac引用
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加数据库服务 - 这里会注册DbContext和Repository
-builder.Services.AddDatabaseServices(builder.Configuration);
+// 配置使用Autofac作为DI容器
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    // 注册所有Grassroots模块
+    containerBuilder.RegisterGrassrootsModules(builder.Configuration);
+});
 
-// 添加服务到容器
+// 添加控制器和API浏览器
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -44,9 +52,11 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
-// 添加其他框架服务 - 命令和查询分发器，以及自动映射
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
+// 添加服务发现
+builder.Services.AddServiceDiscovery(builder.Configuration);
+
+// 添加健康检查
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -67,5 +77,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// 使用服务注册（包含健康检查终结点）
+app.UseServiceRegistration(app.Lifetime, builder.Configuration);
 
 app.Run();
