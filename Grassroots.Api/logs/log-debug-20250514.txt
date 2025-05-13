@@ -1,0 +1,37 @@
+2025-05-14 00:02:35.605 [INF] [Grassroots.Infrastructure.ServiceDiscovery.IServiceDiscovery] 服务发现功能已禁用
+2025-05-14 00:02:35.621 [INF] [] 应用程序启动成功
+2025-05-14 00:02:35.649 [INF] [Microsoft.Hosting.Lifetime] Now listening on: http://localhost:5143
+2025-05-14 00:02:35.651 [INF] [Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+2025-05-14 00:02:35.651 [INF] [Microsoft.Hosting.Lifetime] Hosting environment: Development
+2025-05-14 00:02:35.652 [INF] [Microsoft.Hosting.Lifetime] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api
+2025-05-14 00:02:44.225 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request starting HTTP/1.1 GET http://localhost:5143/swagger/index.html - null null
+2025-05-14 00:02:44.267 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request finished HTTP/1.1 GET http://localhost:5143/swagger/index.html - 200 null text/html;charset=utf-8 42.7863ms
+2025-05-14 00:02:44.636 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request starting HTTP/1.1 GET http://localhost:5143/swagger/v1/swagger.json - null null
+2025-05-14 00:02:44.677 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request finished HTTP/1.1 GET http://localhost:5143/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 40.9818ms
+2025-05-14 00:02:58.328 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request starting HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/info - null null
+2025-05-14 00:02:58.334 [WRN] [Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware] Failed to determine the https port for redirect.
+2025-05-14 00:02:58.336 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executing endpoint 'Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api)'
+2025-05-14 00:02:58.343 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Route matched with {action = "LogInfo", controller = "LoggingDemo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult LogInfo() on controller Grassroots.Api.Controllers.LoggingDemoController (Grassroots.Api).
+2025-05-14 00:02:58.347 [INF] [Grassroots.Api.Controllers.LoggingDemoController] 这是一条信息日志，请求时间: "2025-05-14T00:02:58.3473787+08:00"
+2025-05-14 00:02:58.351 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor] Executing OkObjectResult, writing value of type 'System.String'.
+2025-05-14 00:02:58.354 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Executed action Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api) in 6.9421ms
+2025-05-14 00:02:58.355 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executed endpoint 'Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api)'
+2025-05-14 00:02:58.357 [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/LoggingDemo/info responded 200 in 23.9189 ms
+2025-05-14 00:02:58.359 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request finished HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/info - 200 null text/plain; charset=utf-8 30.9892ms
+2025-05-14 00:03:06.084 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request starting HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/info - null null
+2025-05-14 00:03:06.086 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executing endpoint 'Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api)'
+2025-05-14 00:03:06.087 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Route matched with {action = "LogInfo", controller = "LoggingDemo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult LogInfo() on controller Grassroots.Api.Controllers.LoggingDemoController (Grassroots.Api).
+2025-05-14 00:03:06.089 [INF] [Grassroots.Api.Controllers.LoggingDemoController] 这是一条信息日志，请求时间: "2025-05-14T00:03:06.0890045+08:00"
+2025-05-14 00:03:06.089 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor] Executing OkObjectResult, writing value of type 'System.String'.
+2025-05-14 00:03:06.090 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Executed action Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api) in 1.4856ms
+2025-05-14 00:03:06.091 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executed endpoint 'Grassroots.Api.Controllers.LoggingDemoController.LogInfo (Grassroots.Api)'
+2025-05-14 00:03:06.091 [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/LoggingDemo/info responded 200 in 5.2520 ms
+2025-05-14 00:03:06.092 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request finished HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/info - 200 null text/plain; charset=utf-8 8.9234ms
+2025-05-14 00:03:15.173 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request starting HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/status - null null
+2025-05-14 00:03:15.177 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executing endpoint 'Grassroots.Api.Controllers.LoggingDemoController.GetLogStatus (Grassroots.Api)'
+2025-05-14 00:03:15.179 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Route matched with {action = "GetLogStatus", controller = "LoggingDemo"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetLogStatus() on controller Grassroots.Api.Controllers.LoggingDemoController (Grassroots.Api).
+2025-05-14 00:03:15.181 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-05-14 00:03:15.186 [INF] [Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker] Executed action Grassroots.Api.Controllers.LoggingDemoController.GetLogStatus (Grassroots.Api) in 4.6855ms
+2025-05-14 00:03:15.187 [INF] [Microsoft.AspNetCore.Routing.EndpointMiddleware] Executed endpoint 'Grassroots.Api.Controllers.LoggingDemoController.GetLogStatus (Grassroots.Api)'
+2025-05-14 00:03:15.188 [INF] [Serilog.AspNetCore.RequestLoggingMiddleware] HTTP GET /api/LoggingDemo/status responded 200 in 11.2218 ms
+2025-05-14 00:03:15.189 [INF] [Microsoft.AspNetCore.Hosting.Diagnostics] Request finished HTTP/1.1 GET http://localhost:5143/api/LoggingDemo/status - 200 null application/json; charset=utf-8 16.568ms
