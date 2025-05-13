@@ -38,7 +38,7 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetAllTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.GetAll().ToListAsync(cancellationToken);
+            var todos = await _repository.AsQueryable().ToListAsync(cancellationToken);
             return _mapper.Map<List<TodoDto>>(todos);
         }
     }
@@ -70,7 +70,7 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<TodoDto> HandleAsync(GetTodoByIdQuery query, CancellationToken cancellationToken = default)
         {
-            var todo = await _repository.GetByIdAsync(query.Id);
+            var todo = await _repository.GetByIdAsync(query.Id, cancellationToken);
             if (todo == null)
                 throw new ArgumentException($"待办事项不存在: {query.Id}", nameof(query.Id));
 
@@ -105,7 +105,7 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetCompletedTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.Find(t => t.IsCompleted).ToListAsync(cancellationToken);
+            var todos = await _repository.AsQueryable().Where(t => t.IsCompleted).ToListAsync(cancellationToken);
             return _mapper.Map<List<TodoDto>>(todos);
         }
     }
@@ -137,7 +137,7 @@ namespace Grassroots.Application.Queries.Handlers
         /// <returns>查询结果</returns>
         public async Task<IEnumerable<TodoDto>> HandleAsync(GetIncompleteTodosQuery query, CancellationToken cancellationToken = default)
         {
-            var todos = await _repository.Find(t => !t.IsCompleted).ToListAsync(cancellationToken);
+            var todos = await _repository.AsQueryable().Where(t => !t.IsCompleted).ToListAsync(cancellationToken);
             return _mapper.Map<List<TodoDto>>(todos);
         }
     }

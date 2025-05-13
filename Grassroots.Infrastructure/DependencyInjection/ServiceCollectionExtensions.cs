@@ -11,6 +11,7 @@ using Grassroots.Infrastructure.Data;
 using Grassroots.Infrastructure.Events;
 using Grassroots.Infrastructure.Mapping;
 using Grassroots.Infrastructure.Queries;
+using Grassroots.Infrastructure.ServiceDiscovery;
 using Grassroots.Model.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -173,23 +174,23 @@ namespace Grassroots.Infrastructure.DependencyInjection
             var domainEventHandlerType = typeof(IDomainEventHandler<>);
             foreach (var assembly in assemblies)
             {
-                var types = assembly.GetTypes()
+                var domainEventTypes = assembly.GetTypes()
                     .Where(t => !t.IsAbstract && !t.IsInterface &&
-                        t.GetInterfaces().Any(i => i.IsGenericType && 
-                        i.GetGenericTypeDefinition() == domainEventHandlerType));
+                                t.GetInterfaces().Any(i => i.IsGenericType && 
+                                                         i.GetGenericTypeDefinition() == domainEventHandlerType));
 
-                foreach (var type in types)
+                foreach (var handlerType in domainEventTypes)
                 {
-                    var interfaces = type.GetInterfaces()
+                    var interfaces = handlerType.GetInterfaces()
                         .Where(i => i.IsGenericType && 
-                        i.GetGenericTypeDefinition() == domainEventHandlerType);
+                                    i.GetGenericTypeDefinition() == domainEventHandlerType);
 
                     foreach (var interfaceType in interfaces)
                     {
                         var eventType = interfaceType.GetGenericArguments()[0];
-                        var methodInfo = typeof(IDomainEventBus).GetMethod("Subscribe");
-                        var genericMethod = methodInfo.MakeGenericMethod(eventType, type);
-                        genericMethod.Invoke(domainEventBus, null);
+                        var registerMethod = domainEventBus.GetType().GetMethod("Register");
+                        var genericRegisterMethod = registerMethod.MakeGenericMethod(eventType);
+                        genericRegisterMethod.Invoke(domainEventBus, null);
                     }
                 }
             }
@@ -198,23 +199,23 @@ namespace Grassroots.Infrastructure.DependencyInjection
             var integrationEventHandlerType = typeof(IIntegrationEventHandler<>);
             foreach (var assembly in assemblies)
             {
-                var types = assembly.GetTypes()
+                var integrationEventTypes = assembly.GetTypes()
                     .Where(t => !t.IsAbstract && !t.IsInterface &&
-                        t.GetInterfaces().Any(i => i.IsGenericType && 
-                        i.GetGenericTypeDefinition() == integrationEventHandlerType));
+                                t.GetInterfaces().Any(i => i.IsGenericType && 
+                                                         i.GetGenericTypeDefinition() == integrationEventHandlerType));
 
-                foreach (var type in types)
+                foreach (var handlerType in integrationEventTypes)
                 {
-                    var interfaces = type.GetInterfaces()
+                    var interfaces = handlerType.GetInterfaces()
                         .Where(i => i.IsGenericType && 
-                        i.GetGenericTypeDefinition() == integrationEventHandlerType);
+                                    i.GetGenericTypeDefinition() == integrationEventHandlerType);
 
                     foreach (var interfaceType in interfaces)
                     {
                         var eventType = interfaceType.GetGenericArguments()[0];
-                        var methodInfo = typeof(IIntegrationEventBus).GetMethod("Subscribe");
-                        var genericMethod = methodInfo.MakeGenericMethod(eventType, type);
-                        genericMethod.Invoke(integrationEventBus, null);
+                        var registerMethod = integrationEventBus.GetType().GetMethod("Register");
+                        var genericRegisterMethod = registerMethod.MakeGenericMethod(eventType);
+                        genericRegisterMethod.Invoke(integrationEventBus, null);
                     }
                 }
             }

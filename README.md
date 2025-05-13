@@ -63,6 +63,8 @@ Grassroots框架采用分层架构，每一层都有其特定的职责：
      - `Migrations/`: 数据库迁移
      - `Queries/`: 查询实现
      - `Repositories/`: 仓储实现
+     - `ServiceDiscovery/`: 服务发现与注册
+     - `Events/`: 事件相关实现
 
 5. **Grassroots.Api** - API层(用户界面层)
    - 包含控制器和程序入口点
@@ -90,22 +92,71 @@ Grassroots.Api
     └── Grassroots.Model
 ```
 
-### 服务注册流程
+## 依赖注入
 
-1. `AddInfrastructure` - 注册基础设施服务，包括命令/查询调度器和AutoMapper
-2. `AddApplication` - 注册应用层服务，包括命令和查询处理器
-3. `AddDatabaseServices` - 注册数据库相关服务，包括DbContext和仓储
+### Autofac依赖注入容器
+
+Grassroots框架使用Autofac作为依赖注入容器，提供更强大和灵活的依赖注入能力：
+
+#### 核心组件：
+
+- `InfrastructureModule` - 注册基础设施服务
+- `ApplicationModule` - 注册应用层服务
+- `ServiceDiscoveryModule` - 注册服务发现相关服务
+- `DbModule` - 注册数据库相关服务
+- `AutofacExtensions` - Autofac扩展方法
+
+#### 注册模块：
+
+```csharp
+public class InfrastructureModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        // 注册命令和查询分发器
+        builder.RegisterType<CommandDispatcher>().As<ICommandDispatcher>().InstancePerLifetimeScope();
+        builder.RegisterType<QueryDispatcher>().As<IQueryDispatcher>().InstancePerLifetimeScope();
+        
+        // 注册AutoMapper
+        builder.RegisterAutoMapper();
+        builder.RegisterType<AutoMapperAdapter>().As<IMapperInterface>().SingleInstance();
+        
+        // 注册事件相关服务
+        builder.RegisterType<DomainEventBus>().As<IDomainEventBus>().SingleInstance();
+        builder.RegisterType<IntegrationEventBus>().As<IIntegrationEventBus>().SingleInstance();
+        builder.RegisterType<EventStore>().As<IEventStore>().InstancePerLifetimeScope();
+        builder.RegisterType<EventMediator>().As<IEventMediator>().InstancePerLifetimeScope();
+    }
+}
+```
+
+#### 配置Autofac：
+
+在`Program.cs`中配置Autofac：
+
+```csharp
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+    .ConfigureContainer<ContainerBuilder>(builder =>
+    {
+        builder.RegisterModule(new InfrastructureModule());
+        builder.RegisterModule(new ApplicationModule());
+        builder.RegisterModule(new ServiceDiscoveryModule());
+        builder.RegisterModule(new DbModule(configuration));
+    });
+```
 
 ## 特性
 
 - 基于.NET 8平台
 - 遵循领域驱动设计(DDD)原则
 - 采用命令查询职责分离(CQRS)模式
-- 支持依赖注入
+- 支持依赖注入（Autofac）
 - 提供通用仓储模式实现
 - RESTful API支持
 - OpenAPI/Swagger集成
 - 强类型配置
+- 微服务架构支持
+- 服务注册与发现
 
 ## 数据访问
 
@@ -146,52 +197,90 @@ cd Grassroots.Infrastructure
 dotnet ef database update --startup-project ../Grassroots.Api
 ```
 
-## 运行说明
+## 微服务架构
 
-### 前提条件
+Grassroots框架提供了对微服务架构的支持，包括以下功能：
 
-- .NET 8 SDK
-- Visual Studio 2022或其他兼容IDE
-- SQL Server/PostgreSQL/MySQL（根据您的选择）
+### 服务注册与发现
 
-### 克隆仓库
+框架集成了Consul作为服务注册与发现中心，允许微服务自动注册并发现其他服务。
 
-```bash
-git clone https://github.com/YidongNET/Grassroots.git
-cd Grassroots
+#### 核心组件：
+
+- `IServiceDiscovery` - 服务发现接口
+- `ConsulServiceDiscovery` - Consul服务发现实现
+- `ServiceDiscoveryHttpClientFactory` - 基于服务发现的HTTP客户端工厂
+- `ServiceInstance` - 服务实例模型
+- `ServiceDiscoveryOptions` - 服务发现配置选项
+- `FeaturesOptions` - 功能开关配置选项
+
+#### 服务注册配置：
+
+在`appsettings.json`文件中，您可以配置服务和Consul连接信息：
+
+```json
+{
+  "Service": {
+    "Id": "",
+    "Name": "GrassrootsService",
+    "Address": "localhost",
+    "Port": 5000,
+    "Tags": [ "api", "grassroots", "ddd" ]
+  },
+  "Consul": {
+    "Enabled": true,
+    "Address": "http://localhost:8500",
+    "HealthCheck": true,
+    "HealthCheckPath": "/health",
+    "HealthCheckInterval": 10,
+    "HealthCheckTimeout": 5
+  },
+  "Features": {
+    "ServiceDiscovery": true
+  }
+}
 ```
 
-### 命令行运行
+#### 服务开关功能：
 
-```bash
-cd Grassroots.Api
-dotnet run
+框架支持通过配置文件控制服务发现功能的开启和关闭：
+
+- `Consul.Enabled` - 控制Consul服务是否启用
+- `Features.ServiceDiscovery` - 控制服务发现功能是否启用
+
+在开发环境中，您可以在`appsettings.Development.json`中默认禁用服务发现：
+
+```json
+{
+  "Features": {
+    "ServiceDiscovery": false
+  }
+}
 ```
 
-### Visual Studio运行
+#### 健康检查：
 
-1. 打开`Grassroots.sln`解决方案文件
-2. 将`Grassroots.Api`设置为启动项目
-3. 按`F5`运行项目
+框架提供了内置的健康检查端点，Consul会通过这个端点检查服务的健康状态：
 
-### 数据库配置
+- `/health` - 健康检查端点
 
-1. 在`Grassroots.Api/appsettings.json`中修改连接字符串和提供程序类型
-2. 运行迁移命令：
-   ```bash
-   cd Grassroots.Infrastructure
-   dotnet ef database update --startup-project ../Grassroots.Api
-   ```
+#### 服务调用：
 
-## 示例
+使用`ServiceDiscoveryHttpClientFactory`可以方便地调用其他微服务：
 
-框架附带了一个待办事项(Todo)API示例，展示了完整的CRUD操作：
+```csharp
+// 注入工厂
+private readonly ServiceDiscoveryHttpClientFactory _httpClientFactory;
 
-- `GET /api/todos` - 获取所有待办事项
-- `GET /api/todos/{id}` - 根据ID获取待办事项
-- `POST /api/todos` - 创建新的待办事项
-- `PUT /api/todos/{id}` - 更新现有待办事项
-- `DELETE /api/todos/{id}` - 删除待办事项
+// 调用服务
+var result = await _httpClientFactory.ExecuteRequestAsync<JsonDocument>(
+    "OtherService", 
+    async (client) => {
+        var response = await client.GetAsync("/api/resource");
+        response.EnsureSuccessStatusCode();
+        return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+    });
+```
 
 ## 事件架构
 
@@ -260,7 +349,50 @@ dotnet run
 - 领域事件实现
 - 集成事件实现
 - 事件处理器
-- 控制器使用示例
+- 服务发现演示控制器
+- 健康检查控制器
+
+## 运行说明
+
+### 前提条件
+
+- .NET 8 SDK
+- Visual Studio 2022或其他兼容IDE
+- SQL Server/PostgreSQL/MySQL（根据您的选择）
+- Consul（用于服务发现，可选）
+
+### 克隆仓库
+
+```bash
+git clone https://github.com/YidongNET/Grassroots.git
+cd Grassroots
+```
+
+### 命令行运行
+
+```bash
+cd Grassroots.Api
+dotnet run
+```
+
+### Visual Studio运行
+
+1. 打开`Grassroots.sln`解决方案文件
+2. 将`Grassroots.Api`设置为启动项目
+3. 按`F5`运行项目
+
+### 安装和运行Consul（可选）
+
+如果需要服务注册与发现功能：
+
+1. 下载并安装Consul: https://www.consul.io/downloads
+2. 运行Consul开发模式:
+
+```bash
+consul agent -dev
+```
+
+3. 访问Consul UI: http://localhost:8500
 
 ## 贡献
 
