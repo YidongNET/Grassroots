@@ -1,17 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Grassroots.Domain.ValueObjects
 {
-    /// <summary>
-    /// 值对象基类
-    /// </summary>
+    // Base class for Value Objects in DDD
     public abstract class ValueObject
     {
-        /// <summary>
-        /// 获取用于相等性比较的组件
-        /// </summary>
-        /// <returns>用于比较的属性值列表</returns>
         protected abstract IEnumerable<object> GetEqualityComponents();
 
         public override bool Equals(object obj)
@@ -31,22 +22,6 @@ namespace Grassroots.Domain.ValueObjects
             return GetEqualityComponents()
                 .Select(x => x != null ? x.GetHashCode() : 0)
                 .Aggregate((x, y) => x ^ y);
-        }
-
-        public static bool operator ==(ValueObject left, ValueObject right)
-        {
-            if (ReferenceEquals(left, null) && ReferenceEquals(right, null))
-                return true;
-
-            if (ReferenceEquals(left, null) || ReferenceEquals(right, null))
-                return false;
-
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(ValueObject left, ValueObject right)
-        {
-            return !(left == right);
         }
     }
 } 

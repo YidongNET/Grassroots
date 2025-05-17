@@ -1,0 +1,18 @@
+[2025-05-18 01:02:05.440 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 01:02:05.467 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:02:05.467 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:02:05.467 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:02:05.467 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:02:52.200 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:19:47.716 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 01:19:47.745 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:19:47.745 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:19:47.745 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:19:47.745 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:19:50.306 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:24:49.038 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 01:24:49.064 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:24:49.065 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:24:49.065 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:24:49.065 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:27:25.999 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>

@@ -1,93 +1,37 @@
 using System;
-using System.Text.Json;
 
 namespace Grassroots.Domain.Events
 {
     /// <summary>
     /// 领域事件基类
     /// </summary>
-    public abstract class DomainEvent
+    public abstract class DomainEvent : IDomainEvent
     {
         /// <summary>
-        /// 事件ID
+        /// 事件唯一标识
         /// </summary>
-        public Guid Id { get; }
+        public Guid Id { get; protected set; }
         
         /// <summary>
         /// 事件发生时间
         /// </summary>
-        public DateTime OccurredOn { get; }
-
-        /// <summary>
-        /// 聚合根ID
-        /// </summary>
-        public string AggregateId { get; protected set; }
-
-        /// <summary>
-        /// 聚合根类型
-        /// </summary>
-        public string AggregateType { get; protected set; }
-
-        /// <summary>
-        /// 事件类型
-        /// </summary>
-        public string EventType => GetType().Name;
-
+        public DateTime OccurredOn { get; protected set; }
+        
         /// <summary>
         /// 事件版本
         /// </summary>
         public int Version { get; protected set; }
-
+        
         /// <summary>
-        /// 事件元数据
+        /// 事件类型名
         /// </summary>
-        public JsonDocument Metadata { get; private set; }
+        public string EventType => GetType().Name;
 
         protected DomainEvent()
         {
             Id = Guid.NewGuid();
             OccurredOn = DateTime.UtcNow;
-            Metadata = JsonDocument.Parse("{}");
-        }
-
-        protected DomainEvent(string aggregateId, string aggregateType, int version) : this()
-        {
-            AggregateId = aggregateId;
-            AggregateType = aggregateType;
-            Version = version;
-        }
-
-        /// <summary>
-        /// 添加元数据
-        /// </summary>
-        /// <param name="key">键</param>
-        /// <param name="value">值</param>
-        public void AddMetadata(string key, object value)
-        {
-            var metadataObject = new
-            {
-                existingMetadata = JsonSerializer.Deserialize<object>(Metadata.RootElement.GetRawText()),
-                newData = new Dictionary<string, object> { { key, value } }
-            };
-            
-            var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
-            var json = JsonSerializer.Serialize(metadataObject, jsonOptions);
-            Metadata = JsonDocument.Parse(json);
-        }
-
-        /// <summary>
-        /// 获取元数据
-        /// </summary>
-        /// <param name="key">键</param>
-        /// <returns>值</returns>
-        public T GetMetadata<T>(string key)
-        {
-            if (Metadata.RootElement.TryGetProperty(key, out var element))
-            {
-                return JsonSerializer.Deserialize<T>(element.GetRawText());
-            }
-            
-            return default;
+            Version = 1;
         }
     }
 } 

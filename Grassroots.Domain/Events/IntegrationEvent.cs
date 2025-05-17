@@ -1,71 +1,42 @@
 using System;
-using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Grassroots.Domain.Events
 {
     /// <summary>
     /// 集成事件基类
     /// </summary>
-    public abstract class IntegrationEvent
+    public class IntegrationEvent : IIntegrationEvent
     {
         /// <summary>
-        /// 事件ID
+        /// 事件唯一标识
         /// </summary>
-        public Guid Id { get; }
-
+        [JsonInclude]
+        public Guid Id { get; private set; }
+        
         /// <summary>
-        /// 事件发生时间
+        /// 事件创建时间
         /// </summary>
-        public DateTime CreationDate { get; }
-
+        [JsonInclude]
+        public DateTime CreationDate { get; private set; }
+        
         /// <summary>
         /// 事件类型
         /// </summary>
+        [JsonIgnore]
         public string EventType => GetType().Name;
 
-        /// <summary>
-        /// 事件元数据
-        /// </summary>
-        public JsonDocument Metadata { get; private set; }
-
-        protected IntegrationEvent()
+        public IntegrationEvent()
         {
             Id = Guid.NewGuid();
             CreationDate = DateTime.UtcNow;
-            Metadata = JsonDocument.Parse("{}");
         }
 
-        /// <summary>
-        /// 添加元数据
-        /// </summary>
-        /// <param name="key">键</param>
-        /// <param name="value">值</param>
-        public void AddMetadata(string key, object value)
+        [JsonConstructor]
+        public IntegrationEvent(Guid id, DateTime creationDate)
         {
-            var metadataObject = new
-            {
-                existingMetadata = JsonSerializer.Deserialize<object>(Metadata.RootElement.GetRawText()),
-                newData = new Dictionary<string, object> { { key, value } }
-            };
-            
-            var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
-            var json = JsonSerializer.Serialize(metadataObject, jsonOptions);
-            Metadata = JsonDocument.Parse(json);
-        }
-
-        /// <summary>
-        /// 获取元数据
-        /// </summary>
-        /// <param name="key">键</param>
-        /// <returns>值</returns>
-        public T GetMetadata<T>(string key)
-        {
-            if (Metadata.RootElement.TryGetProperty(key, out var element))
-            {
-                return JsonSerializer.Deserialize<T>(element.GetRawText());
-            }
-            
-            return default;
+            Id = id;
+            CreationDate = creationDate;
         }
     }
 } 
