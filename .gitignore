@@ -62,4 +62,10 @@ ScaffoldingReadMe.txt
 # Tools
 _ReSharper*/
 *.[Rr]e[Ss]harper
-*.DotSettings.user 
+*.DotSettings.user
+
+# 模板特定文件
+.template.config/
+
+# 在模板使用但不在原始项目中的目录
+database-config-examples/ 

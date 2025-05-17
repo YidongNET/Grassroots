@@ -1,38 +1,55 @@
+using System.Collections.Generic;
+
 namespace Grassroots.Infrastructure.ServiceDiscovery
 {
     /// <summary>
-    /// Consul选项配置
+    /// Consul配置选项
     /// </summary>
     public class ConsulOptions
     {
         /// <summary>
-        /// 是否启用Consul服务
+        /// 是否启用Consul
         /// </summary>
         public bool Enabled { get; set; } = true;
-
+        
         /// <summary>
-        /// Consul服务地址
+        /// 服务名称
         /// </summary>
-        public string Address { get; set; } = "http://localhost:8500";
-
+        public string ServiceName { get; set; } = "grassroots-api";
+        
         /// <summary>
-        /// 是否启用健康检查
+        /// 服务ID
         /// </summary>
-        public bool HealthCheck { get; set; } = true;
-
+        public string ServiceId { get; set; } = "grassroots-api-1";
+        
         /// <summary>
-        /// 健康检查路径
+        /// 服务地址
         /// </summary>
-        public string HealthCheckPath { get; set; } = "/health";
-
+        public string ServiceAddress { get; set; } = "localhost";
+        
+        /// <summary>
+        /// 服务端口
+        /// </summary>
+        public int ServicePort { get; set; } = 5000;
+        
+        /// <summary>
+        /// Consul地址
+        /// </summary>
+        public string ConsulAddress { get; set; } = "http://localhost:8500";
+        
+        /// <summary>
+        /// 健康检查地址
+        /// </summary>
+        public string HealthCheck { get; set; } = "/health";
+        
+        /// <summary>
+        /// 服务标签
+        /// </summary>
+        public List<string> Tags { get; set; } = new List<string>();
+        
         /// <summary>
         /// 健康检查间隔（秒）
         /// </summary>
-        public int HealthCheckInterval { get; set; } = 10;
-
-        /// <summary>
-        /// 健康检查超时（秒）
-        /// </summary>
-        public int HealthCheckTimeout { get; set; } = 5;
+        public int Interval { get; set; } = 10;
     }
 } 
