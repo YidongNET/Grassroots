@@ -59,8 +59,8 @@ namespace Grassroots.Api.Converters
             {
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
-                    if (decimal.TryParse(stringValue, out decimal value))
+                    string? stringValue = reader.GetString();
+                    if (stringValue != null && decimal.TryParse(stringValue, out decimal value))
                     {
                         return value;
                     }
@@ -89,7 +89,7 @@ namespace Grassroots.Api.Converters
                 
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
+                    string? stringValue = reader.GetString();
                     if (string.IsNullOrEmpty(stringValue))
                     {
                         return null;
@@ -125,8 +125,8 @@ namespace Grassroots.Api.Converters
             {
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
-                    if (long.TryParse(stringValue, out long value))
+                    string? stringValue = reader.GetString();
+                    if (stringValue != null && long.TryParse(stringValue, out long value))
                     {
                         return value;
                     }
@@ -150,8 +150,8 @@ namespace Grassroots.Api.Converters
             {
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
-                    if (ulong.TryParse(stringValue, out ulong value))
+                    string? stringValue = reader.GetString();
+                    if (stringValue != null && ulong.TryParse(stringValue, out ulong value))
                     {
                         return value;
                     }
@@ -180,7 +180,7 @@ namespace Grassroots.Api.Converters
                 
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
+                    string? stringValue = reader.GetString();
                     if (string.IsNullOrEmpty(stringValue))
                     {
                         return null;
@@ -221,7 +221,7 @@ namespace Grassroots.Api.Converters
                 
                 if (reader.TokenType == JsonTokenType.String)
                 {
-                    string stringValue = reader.GetString();
+                    string? stringValue = reader.GetString();
                     if (string.IsNullOrEmpty(stringValue))
                     {
                         return null;

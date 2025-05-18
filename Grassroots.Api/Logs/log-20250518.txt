@@ -16,3 +16,21 @@
 [2025-05-18 01:24:49.065 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
 [2025-05-18 01:24:49.065 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
 [2025-05-18 01:27:25.999 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:30:15.622 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 01:30:15.647 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:30:15.648 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:30:15.648 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 01:30:15.648 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:32:23.957 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:36:39.024 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 10:36:39.054 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:36:39.054 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:36:39.054 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:36:39.054 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:38:15.368 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:39:07.985 INF] Consul服务注册已禁用 <Grassroots.Api>
+[2025-05-18 10:39:08.011 INF] Now listening on: http://localhost:5111 <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:39:08.011 INF] Application started. Press Ctrl+C to shut down. <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:39:08.011 INF] Hosting environment: Development <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:39:08.011 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <Microsoft.Hosting.Lifetime>
+[2025-05-18 10:39:17.441 INF] Application is shutting down... <Microsoft.Hosting.Lifetime>

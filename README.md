@@ -1,4 +1,4 @@
-# Grassroots - .NET 8 DDD项目
+# Grassroots Framework
 
 Grassroots是一个基于.NET 8平台的现代化应用框架，采用依赖倒置原则(DIP)和洋葱架构实现，旨在为企业级应用提供一个高效、可扩展的基础架构。
 
@@ -276,9 +276,6 @@ Grassroots/
 3. 在项目根目录执行以下命令：
 
 ```bash
-# 还原依赖
-dotnet restore
-
 # 编译项目
 dotnet build
 
@@ -286,7 +283,7 @@ dotnet build
 dotnet run --project Grassroots.Api
 ```
 
-默认情况下，API将在`https://localhost:5001`和`http://localhost:5000`上运行。
+默认情况下，API将在`http://localhost:5111`上运行。
 
 ## 数据库配置
 
