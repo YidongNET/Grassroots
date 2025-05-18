@@ -1,543 +1,424 @@
-# Grassroots Framework
+# Grassroots
 
-Grassroots是一个基于.NET 8平台的现代化应用框架，采用依赖倒置原则(DIP)和洋葱架构实现，旨在为企业级应用提供一个高效、可扩展的基础架构。
+一个基于.NET 8框架的DDD领域驱动设计和洋葱架构的应用程序。
 
-## 核心目标
+## 项目概述
 
-- 提供清晰的领域驱动设计架构
-- 实现关注点分离，促进代码重用
-- 支持可测试性和可维护性
-- 集成现代化开发实践
-- 提供开箱即用的基础设施
+Grassroots是一个使用领域驱动设计(DDD)和洋葱架构构建的现代化.NET 8应用程序。该项目展示了如何在实际开发中应用DDD的核心概念和洋葱架构的分层设计，为构建企业级应用提供了坚实的基础。
+
+## 技术栈
+
+- **.NET 8** - 基础框架
+- **ASP.NET Core 8** - Web API框架
+- **Entity Framework Core 8** - 多数据库ORM支持(SQL Server、PostgreSQL、MySQL)
+- **Autofac** - 依赖注入容器
+- **Serilog** - 结构化日志记录
+- **Consul** - 服务注册与发现
+- **Swagger** - API文档
+- **System.Text.Json** - JSON序列化
+
+## 如何开始
+
+### 先决条件
+
+- .NET 8 SDK
+- Visual Studio 2022 或 Visual Studio Code
+- SQL Server/PostgreSQL/MySQL (可选，取决于持久化方式)
+
+### 构建和运行
+
+1. 克隆仓库：
+   ```
+   git clone https://github.com/yourusername/Grassroots.git
+   ```
+
+2. 导航到项目目录：
+   ```
+   cd Grassroots
+   ```
+
+3. 构建解决方案：
+   ```
+   dotnet build
+   ```
+
+4. 运行API项目：
+   ```
+   dotnet run --project Grassroots.Api
+   ```
+
+5. 在浏览器中访问：
+   ```
+   https://localhost:5111/swagger
+   ```
+
+## 依赖关系
+
+项目遵循洋葱架构的依赖原则：
+
+- API层依赖于应用层
+- 应用层依赖于领域层和基础设施层
+- 基础设施层依赖于领域层
+- 领域层不依赖任何其他层
+
 
 
 ## 项目架构
 
-项目采用四层架构，每一层都有明确的职责：
+项目采用领域驱动设计(DDD)和洋葱架构的组合，严格遵循洋葱架构的分层依赖原则：
 
-- **Domain层**：包含业务实体、值对象、领域事件和仓储接口
-- **Application层**：包含业务用例、命令/查询处理程序(CQRS)和应用服务接口
-- **Infrastructure层**：包含数据访问、外部服务集成和技术实现
-- **API层**：提供REST API接口，处理HTTP请求和响应
+- **领域层(Domain)** 处于核心位置，不依赖任何其他层
+- **应用层(Application)** 依赖领域层，协调领域对象完成业务逻辑
+- **基础设施层(Infrastructure)** 依赖领域层，提供技术实现
+- **API层** 依赖应用层，处理用户交互
 
-### 依赖关系
+### 领域驱动设计(DDD)实现
 
-项目遵循严格的依赖规则：
+- **实体(Entities)**: 具有唯一标识的对象
+- **值对象(Value Objects)**: 无唯一标识的不可变对象
+- **领域服务(Domain Services)**: 处理跨实体业务逻辑
+- **聚合(Aggregates)**: 实体的边界集合
+- **仓储(Repositories)**: 持久化实体的抽象
+- **领域事件(Domain Events)**: 领域内部的通知机制
+- **事件溯源(Event Sourcing)**: 通过事件记录实体状态变化
+
+### 洋葱架构实现
+
+从内到外的分层结构：
+
+1. **领域层(Domain Layer)** - 核心业务逻辑和规则
+2. **应用层(Application Layer)** - 协调领域对象完成用户操作
+3. **基础设施层(Infrastructure Layer)** - 提供持久化、消息传递等技术支持
+4. **表示层/API层(Presentation/API Layer)** - 处理用户请求和响应
+
+## 解决方案结构
+
+- **Grassroots.Domain** - 领域层
+  - Entities - 实体与聚合根
+    - `Entity<TKey>` - 通用实体基类，集成领域事件功能
+    - `AggregateRoot<TKey>` - 聚合根基类，添加了审计字段
+    - `EventSourcedAggregateRoot` - 支持事件溯源的聚合根
+  - ValueObjects - 值对象
+  - Events - 领域事件系统
+    - `IDomainEvent` - 领域事件接口
+    - `DomainEvent` - 领域事件基类
+    - `IHasDomainEvents` - 支持领域事件的实体接口
+  - Interfaces - 接口
+    - `IRepository<T>` - 泛型仓储接口
+    - `IUnitOfWork` - 工作单元接口
+    - `IIdGenerator` - ID生成器接口
+  - Services - 领域服务
+  - Exceptions - 异常
+
+- **Grassroots.Application** - 应用层
+  - Features - 按功能组织的业务用例
+  - Dtos - 数据传输对象
+  - Interfaces - 应用服务接口
+  - Services - 应用服务实现
+  - Mappings - 对象映射配置
+  - DependencyInjection - 依赖注入模块
+
+- **Grassroots.Infrastructure** - 基础设施层
+  - Data - 数据访问
+    - `GrassrootsDbContext` - EF Core数据上下文
+    - `RepositoryBase<T>` - 通用仓储实现
+    - `UnitOfWork` - 工作单元实现 
+    - `DbContextFactory` - 多数据库支持工厂
+  - Events - 事件处理
+    - `EventStore` - 事件存储实现
+    - `DomainEventService` - 领域事件处理服务
+    - `InMemoryEventBus` - 内存事件总线
+  - IdGenerators - ID生成
+    - `SnowflakeIdGenerator` - 雪花算法ID生成器
+  - ServiceDiscovery - 服务发现
+    - `ConsulServiceDiscovery` - Consul服务注册与发现实现
+  - DependencyInjection - 依赖注入
+    - `InfrastructureModule` - Autofac模块
+
+- **Grassroots.Api** - API层
+  - Controllers - 控制器
+    - `HealthController` - 健康检查控制器
+    - `IdGeneratorController` - ID生成器API示例
+  - Filters - 过滤器
+  - Program.cs - 应用启动配置
+
+## 详细目录结构
+
+项目采用层次分明的目录结构，清晰展示了领域驱动设计和洋葱架构的实现：
+
+### 根目录
+```
+├── Grassroots.Domain/            # 领域层 - 核心业务逻辑
+├── Grassroots.Application/       # 应用层 - 业务用例和协调
+├── Grassroots.Infrastructure/    # 基础设施层 - 技术实现
+├── Grassroots.Api/               # API层 - 用户接口
+├── docs/                         # 文档目录
+├── .github/                      # GitHub配置
+├── Grassroots.sln                # 解决方案文件
+├── README.md                     # 项目说明文档
+└── LICENSE                       # 许可证文件
+```
+
+### 领域层 (Grassroots.Domain)
+```
+├── Entities/                     # 实体定义
+│   ├── Entity.cs                 # 通用实体基类
+│   ├── AggregateRoot.cs          # 聚合根基类
+│   └── EventSourcedAggregateRoot.cs # 支持事件溯源的聚合根
+├── Events/                       # 领域事件
+│   ├── IDomainEvent.cs           # 领域事件接口
+│   ├── DomainEvent.cs            # 领域事件基类
+│   ├── IHasDomainEvents.cs       # 支持领域事件的实体接口
+│   ├── IEventStore.cs            # 事件存储接口
+│   ├── IDomainEventService.cs    # 领域事件服务接口
+│   ├── IEventBus.cs              # 事件总线接口
+│   ├── IIntegrationEvent.cs      # 集成事件接口
+│   ├── IntegrationEvent.cs       # 集成事件基类
+│   └── IIntegrationEventHandler.cs # 集成事件处理器接口
+├── Interfaces/                   # 领域接口
+│   ├── IRepository.cs            # 仓储接口
+│   ├── IUnitOfWork.cs            # 工作单元接口
+│   └── IIdGenerator.cs           # ID生成器接口
+├── ValueObjects/                 # 值对象
+├── Services/                     # 领域服务
+├── Exceptions/                   # 领域异常
+└── Enums/                        # 枚举定义
+```
+
+### 应用层 (Grassroots.Application)
+```
+├── Features/                     # 按功能组织的业务用例
+├── Services/                     # 应用服务实现
+├── Interfaces/                   # 应用服务接口
+├── Dtos/                         # 数据传输对象
+├── Mappings/                     # 对象映射配置
+├── DependencyInjection/          # 依赖注入模块
+└── Common/                       # 通用功能
+```
+
+### 基础设施层 (Grassroots.Infrastructure)
+```
+├── Data/                         # 数据访问
+│   ├── GrassrootsDbContext.cs    # EF Core数据上下文
+│   ├── RepositoryBase.cs         # 通用仓储实现
+│   ├── UnitOfWork.cs             # 工作单元实现
+│   └── DbContextFactory.cs       # 多数据库支持工厂
+├── Events/                       # 事件处理
+│   ├── EventStore.cs             # 事件存储实现
+│   ├── DomainEventService.cs     # 领域事件服务
+│   ├── InMemoryEventBus.cs       # 内存事件总线
+│   ├── DomainToIntegrationEventMapper.cs # 事件映射器
+│   └── DomainEventToIntegrationEventHandler.cs # 领域事件处理器
+├── IdGenerators/                 # ID生成器
+│   └── SnowflakeIdGenerator.cs   # 雪花算法ID生成器
+├── ServiceDiscovery/             # 服务发现
+├── Repositories/                 # 仓储实现
+├── Persistence/                  # 持久化相关
+├── Identity/                     # 身份认证
+├── Logging/                      # 日志记录
+├── Services/                     # 基础服务
+├── DependencyInjection/          # 依赖注入
+└── DependencyInjectionExtensions.cs # 依赖注入扩展方法
+```
+
+### API层 (Grassroots.Api)
+```
+├── Controllers/                  # API控制器
+│   ├── HealthController.cs       # 健康检查控制器
+│   └── IdGeneratorController.cs  # ID生成器API示例
+├── Filters/                      # 过滤器
+├── Logs/                         # 日志文件
+├── Properties/                   # 项目属性
+├── Program.cs                    # 应用程序入口和配置
+├── appsettings.json              # 应用程序配置
+└── appsettings.Development.json  # 开发环境配置
+```
+
+## 项目结构关系
+
+Grassroots项目基于领域驱动设计(DDD)和洋葱架构实现，以下是各层之间的依赖关系和核心组件交互图：
+
+### 层次依赖关系图
 
 ```
-API层 → Application层 → Domain层 ← Infrastructure层
-                          ↑
-                    Infrastructure层
+           ┌─────────────────────────────┐
+           │                             │
+           │     Grassroots.Api          │ 
+           │    (表示层/接口层)           │
+           │                             │
+           └─────────────┬───────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│               Grassroots.Application                    │
+│                  (应用服务层)                           │
+│                                                         │
+└─────────────────┬──────────────────┬───────────────────┘
+                  │                  │
+                  ▼                  ▼
+┌─────────────────────────┐ ┌─────────────────────────────┐
+│                         │ │                             │
+│  Grassroots.Domain      │ │  Grassroots.Infrastructure  │
+│     (领域层)            │◄┘      (基础设施层)           │
+│                         │ │                             │
+└─────────────────────────┘ └─────────────────────────────┘
 ```
 
-- **Domain层**：不依赖任何其他层
-- **Application层**：仅依赖Domain层
-- **Infrastructure层**：依赖Domain层和Application层
-- **API层**：仅依赖Application层，不直接依赖Infrastructure层
+### 依赖关系说明
 
-## 依赖倒置原则(DIP)实现
+1. **领域层(Grassroots.Domain)**
+   - 位于核心位置，不依赖其他任何层
+   - 定义领域模型、业务规则和核心接口
+   - 包含实体、值对象、领域事件和领域服务
 
-本项目严格实现了依赖倒置原则：
+2. **应用层(Grassroots.Application)**
+   - 依赖领域层
+   - 协调领域对象实现用例
+   - 实现应用服务，处理用户请求
+   - 不包含业务规则，只负责协调
 
-1. **抽象定义在Domain和Application层**
-   - `IRepository<T>`等接口定义在Domain层
-   - `IApplicationDbContext`等接口定义在Application层
+3. **基础设施层(Grassroots.Infrastructure)**
+   - 依赖领域层，实现领域层定义的接口
+   - 不依赖应用层
+   - 提供技术实现：数据访问、消息队列、身份认证等
 
-2. **实现在Infrastructure层**
-   - Repository和DbContext等具体实现在Infrastructure层
-   - 实现依赖抽象，抽象不依赖实现
+4. **API层(Grassroots.Api)**
+   - 依赖应用层
+   - 处理HTTP请求和响应
+   - 不包含业务逻辑
 
-3. **运行时动态加载**
-   - API层通过反射动态加载Infrastructure层组件
-   - 编译时完全解耦，运行时动态集成
+### 核心组件交互关系
 
-4. **Autofac依赖注入**
-   - 使用Autofac模块化管理依赖注册
-   - 分层注册确保每层只访问允许的依赖
+#### 领域事件流程
 
-## 多数据库支持
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│             │    │             │    │             │    │             │
+│  Entity     │───►│ DomainEvent │───►│EventService │───►│  EventBus   │
+│             │    │             │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+                                             │                  │
+                                             ▼                  ▼
+                                      ┌─────────────┐    ┌─────────────┐
+                                      │             │    │             │
+                                      │ EventStore  │    │ EventHandler│
+                                      │             │    │             │
+                                      └─────────────┘    └─────────────┘
+```
 
-项目支持多种数据库系统，无需修改业务代码：
+#### 仓储与工作单元模式
 
-- SQL Server
-- PostgreSQL
-- MySQL
-- SQLite
-- 内存数据库 (开发测试用)
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│             │    │             │    │             │
+│ AppService  │───►│ Repository  │───►│ UnitOfWork  │
+│             │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘
+                          │                  │
+                          ▼                  ▼
+                   ┌─────────────┐    ┌─────────────┐
+                   │             │    │             │
+                   │ DbContext   │◄───┤ Transaction │
+                   │             │    │             │
+                   └─────────────┘    └─────────────┘
+```
 
-通过`DatabaseFactory`工厂模式实现数据库提供程序的动态选择，配置采用简化方式，位于`appsettings.json`中：
+#### 服务注册与发现
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│             │    │             │    │             │
+│  Program.cs │───►│ServiceDisc. │───►│   Consul    │
+│             │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                                     │
+       │                                     ▼
+       │                             ┌─────────────┐
+       │                             │             │
+       └────────────────────────────►│Health Check │
+                                     │             │
+                                     └─────────────┘
+```
+
+### 业务流程示例
+
+以ID生成器API为例说明完整请求流程：
+
+1. **API层**：`IdGeneratorController` 接收HTTP请求
+2. **应用层**：应用服务协调操作（简单示例中省略）
+3. **领域层**：`IIdGenerator` 接口定义生成ID的契约
+4. **基础设施层**：`SnowflakeIdGenerator` 实现ID生成算法
+5. **响应**：生成的ID返回给客户端
+
+### 横切关注点
+
+* **依赖注入**：通过Autofac容器注册和解析依赖
+* **日志记录**：使用Serilog实现结构化日志
+* **配置管理**：使用.NET配置系统管理应用配置
+* **错误处理**：统一的异常处理和HTTP响应
+
+## 功能亮点
+
+1. **完整的DDD实现**
+   - 实体、值对象、聚合根等DDD概念的完整实现
+   - 领域事件和事件溯源
+
+2. **高度可配置的雪花算法ID生成器**
+   - 支持自定义位结构配置
+   - 随机WorkerId支持
+   - long类型转string解决JavaScript精度问题
+
+3. **多数据库支持**
+   - 支持SQL Server、PostgreSQL、MySQL
+   - 统一的数据访问接口
+   - 简单的配置切换
+
+4. **服务注册与发现**
+   - Consul集成
+   - 自动健康检查
+   - 服务注册生命周期管理
+
+5. **结构化日志**
+   - Serilog集成
+   - 控制台和文件输出
+   - 上下文信息丰富
+   - 可配置日志开关
+
+6. **依赖注入增强**
+   - Autofac替代默认容器
+   - 模块化注册
+   - 更灵活的生命周期管理
+
+## 配置特性
+
+项目使用标准的.NET配置系统，主要配置包括：
 
 ```json
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "您的连接字符串"
-  },
   "Database": {
-    "ProviderType": "SqlServer" // 支持 SqlServer, PostgreSQL, MySQL, SQLite, InMemory
+    "ProviderType": "SqlServer"  // 可选：SqlServer, PostgreSQL, MySQL
+  },
+  "Snowflake": {
+    "DatacenterId": 1,
+    "WorkerId": -1,  // -1表示自动生成随机WorkerId
+    "SequenceBits": 12,
+    "WorkerIdBits": 5,
+    "DatacenterIdBits": 5
+  },
+  "Serilog": {
+    "Enabled": true,  // 可切换开关
+    // 各种日志级别和输出配置
+  },
+  "Consul": {
+    "Enabled": true,  // 可切换开关
+    // 服务发现配置
   }
 }
 ```
 
-切换数据库只需修改配置文件中的`ProviderType`值和相应的连接字符串，无需修改代码。系统会根据指定的提供程序类型使用对应的数据库技术。
 
-## JSON序列化处理
 
-项目实现了全局JSON序列化配置，解决JavaScript中处理大整数和高精度小数时的精度问题：
+## 许可证
 
-- **长整型自动转字符串**：所有long/ulong类型在JSON序列化时自动转为字符串格式
-- **高精度小数处理**：decimal类型在JSON序列化时自动转为字符串格式
-- **可空类型支持**：完全支持可空值类型的处理
-- **双向转换**：支持从字符串反序列化回原始数值类型
-
-这种处理方式的优势：
-
-1. 避免了JavaScript中Number类型的精度限制(±2^53)
-2. 确保前端获取的金额、ID等关键数值不会失真
-3. 无需在每个模型属性上单独添加特性，全局自动处理
-
-全局配置位于`Program.cs`中，通过自定义`LongToStringConverter`实现：
-
-```csharp
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.Converters.Add(new LongToStringConverter());
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    });
-```
-
-## 雪花算法（分布式ID生成）
-
-项目集成了雪花算法（Snowflake）分布式ID生成器：
-
-- **接口抽象**：`IIdGenerator`定义在Application层
-- **具体实现**：`SnowflakeIdGenerator`实现在Infrastructure层
-- **高度可配置**：支持通过配置自定义工作节点ID、数据中心ID和其他参数
-- **时钟回拨处理**：包含时钟回拨的安全处理机制
-
-配置示例：
-
-```json
-"Snowflake": {
-  "DatacenterId": 1,
-  "WorkerId": 1,
-  "Epoch": 1672531200000, // 2023-01-01 作为起始时间戳
-  "SequenceBits": 12,
-  "WorkerIdBits": 5,
-  "DatacenterIdBits": 5
-}
-```
-
-使用方式：通过依赖注入获取`IIdGenerator`接口并调用`NextId()`方法即可获得全局唯一ID。
-
-## Consul服务注册与发现
-
-项目集成了Consul服务注册与发现功能：
-
-- **可配置开关**：支持通过配置文件开启/关闭Consul服务
-- **自动注册/注销**：应用启动时自动注册，关闭时自动注销
-- **健康检查**：提供健康检查端点和自动检查机制
-- **服务发现**：支持服务发现和负载均衡
-
-配置示例：
-
-```json
-"Consul": {
-  "Enabled": true, // 控制开关
-  "ServiceName": "grassroots-api",
-  "ServiceId": "grassroots-api-1",
-  "ServiceAddress": "localhost",
-  "ServicePort": 5000,
-  "ConsulAddress": "http://localhost:8500",
-  "HealthCheck": "/health",
-  "Tags": ["api", "grassroots", "ddd"],
-  "Interval": 10
-}
-```
-
-使用方式：配置开启后，应用会自动向Consul注册；可通过依赖注入`IServiceDiscovery`接口发现和调用其他服务。
-
-## Serilog结构化日志
-
-项目集成了Serilog结构化日志系统：
-
-- **可配置开关**：支持通过配置文件开启/关闭详细日志
-- **多输出目标**：支持控制台、文件等多种输出方式
-- **异步写入**：使用异步日志写入提高性能
-- **结构化数据**：支持结构化日志数据便于分析
-- **环境敏感**：针对不同环境提供不同的日志级别配置
-
-配置示例：
-
-```json
-"Serilog": {
-  "Enabled": true,
-  "MinimumLevel": {
-    "Default": "Information",
-    "Override": {
-      "Microsoft": "Warning",
-      "System": "Warning"
-    }
-  },
-  "WriteTo": [
-    { "Name": "Console" },
-    { 
-      "Name": "File", 
-      "Args": { 
-        "path": "Logs/log-.txt",
-        "rollingInterval": "Day"
-      }
-    }
-  ]
-}
-```
-
-## 事件系统
-
-项目实现了完整的事件处理系统：
-
-- **领域事件**：支持实体内的领域事件发布和处理
-- **集成事件**：支持跨服务边界的集成事件
-- **事件溯源**：支持基于事件溯源的聚合根实现
-- **发布订阅**：内置发布-订阅模式实现
-
-## 项目结构
-
-```
-Grassroots/
-├── Grassroots.Domain/                # 领域层
-│   ├── Entities/                     # 实体
-│   │   └── BaseEntity.cs             # 实体基类
-│   ├── ValueObjects/                 # 值对象
-│   │   └── ValueObject.cs            # 值对象基类
-│   ├── Events/                       # 领域事件
-│   │   └── IDomainEvent.cs           # 领域事件接口
-│   └── Repositories/                 # 仓储接口
-│       └── IRepository.cs            # 通用仓储接口
-│
-├── Grassroots.Application/           # 应用层
-│   ├── Common/                       # 通用组件
-│   │   ├── Behaviors/                # MediatR行为
-│   │   │   └── ValidationBehavior.cs # 验证行为
-│   │   ├── Interfaces/               # 应用接口
-│   │   │   └── IApplicationDbContext.cs # 数据库上下文接口
-│   │   └── Models/                   # 应用模型
-│   │       └── Result.cs             # 通用结果对象
-│   ├── AutofacModules/               # Autofac模块
-│   │   └── ApplicationModule.cs      # 应用层模块
-│   └── DependencyInjection.cs        # 应用层依赖注入
-│
-├── Grassroots.Infrastructure/        # 基础设施层
-│   ├── Persistence/                  # 持久化
-│   │   ├── ApplicationDbContext.cs   # EF Core数据库上下文
-│   │   └── DatabaseFactory.cs        # 数据库工厂 (支持多数据库)
-│   ├── Repositories/                 # 仓储实现
-│   │   └── Repository.cs             # 通用仓储实现
-│   ├── Services/                     # 服务实现
-│   │   ├── DomainEventService.cs     # 领域事件服务
-│   │   └── SnowflakeIdGenerator.cs   # 雪花算法ID生成器
-│   ├── EventBus/                     # 事件总线
-│   │   └── InMemoryEventBus.cs       # 内存事件总线
-│   ├── EventSourcing/                # 事件溯源
-│   │   └── EventStore.cs             # 事件存储
-│   ├── ServiceDiscovery/             # 服务发现
-│   │   └── ConsulServiceDiscovery.cs # Consul服务发现
-│   ├── AutofacModules/               # Autofac模块
-│   │   └── InfrastructureModule.cs   # 基础设施层模块
-│   └── DependencyInjection.cs        # 基础设施层依赖注入
-│
-└── Grassroots.Api/                   # API层
-    ├── Converters/                   # JSON转换器
-    │   └── LongToStringConverter.cs  # 长整型转字符串转换器
-    ├── Extensions/                   # 扩展方法
-    │   ├── ConsulExtensions.cs       # Consul扩展
-    │   └── ServiceCollectionExtensions.cs # 服务集合扩展
-    ├── Program.cs                    # 应用程序入口
-    └── appsettings.json              # 应用配置
-```
-
-## 详细依赖关系分析
-
-### 各层详细依赖关系
-
-#### Domain层 (核心领域层)
-
-**核心组件**:
-- `AggregateRoot`: 聚合根基类
-- `EventSourcedAggregateRoot`: 事件溯源聚合根
-- `IDomainEvent`: 领域事件接口
-- `IIntegrationEvent`: 集成事件接口
-
-**包依赖**:
-- `MediatR (12.2.0)`: 实现领域事件的发布/订阅和CQRS模式
-
-#### Application层 (应用服务层)
-
-**核心组件**:
-- `IApplicationDbContext`: 数据库上下文接口
-- `IDomainEventService`: 领域事件服务接口
-- `IEventBus`: 事件总线接口
-- `IEventStore`: 事件存储接口
-- `IIdGenerator`: ID生成器接口
-- MediatR行为: 领域事件分发、验证等
-
-**包依赖**:
-- `MediatR (12.2.0)`: 命令和查询处理
-- `Autofac (7.1.0)`: IoC容器
-- `Microsoft.Extensions.DependencyInjection.Abstractions (8.0.0)`: DI抽象
-
-**项目依赖**:
-- `Grassroots.Domain`: 依赖领域层定义的实体和事件
-
-#### Infrastructure层 (基础设施层)
-
-**核心组件**:
-- `ApplicationDbContext`: EF Core上下文实现
-- `DatabaseFactory`: 多数据库支持
-- `EventStore`: 事件存储实现
-- `InMemoryEventBus`: 内存事件总线
-- `Repository`: 仓储实现
-- `SnowflakeIdGenerator`: 雪花算法ID生成器
-- `ConsulServiceDiscovery`: 服务发现实现
-
-**包依赖**:
-- 数据库相关:
-  - `Microsoft.EntityFrameworkCore (8.0.1)`: ORM框架
-  - `Microsoft.EntityFrameworkCore.SqlServer (8.0.1)`: SQL Server支持
-  - `Npgsql.EntityFrameworkCore.PostgreSQL (8.0.0)`: PostgreSQL支持
-  - `Pomelo.EntityFrameworkCore.MySql (8.0.0)`: MySQL支持
-  - `Microsoft.EntityFrameworkCore.Sqlite (8.0.1)`: SQLite支持
-  - `Microsoft.EntityFrameworkCore.InMemory (8.0.1)`: 内存数据库
-  
-- IoC相关:
-  - `Autofac (7.1.0)`: IoC容器
-  - `Autofac.Extensions.DependencyInjection (8.0.0)`: 与ASP.NET Core集成
-
-- 日志相关:
-  - `Serilog (3.1.1)`: 结构化日志
-  - `Serilog.Enrichers.Environment (2.3.0)`: 环境信息
-  - `Serilog.Enrichers.Thread (3.1.0)`: 线程信息
-  - `Serilog.Sinks.Console (5.0.1)`: 控制台输出
-  - `Serilog.Sinks.File (5.0.0)`: 文件输出
-
-- 服务发现:
-  - `Consul (1.7.14.1)`: 服务注册与发现
-
-- 配置相关:
-  - `Microsoft.Extensions.Configuration.Abstractions (8.0.0)`
-  - `Microsoft.Extensions.Configuration.Binder (8.0.0)`
-  - `Microsoft.Extensions.Options (8.0.0)`
-
-**项目依赖**:
-- `Grassroots.Domain`: 实现领域接口
-- `Grassroots.Application`: 实现应用层接口
-
-#### API层 (接口层)
-
-**核心组件**:
-- `Program.cs`: 应用启动配置
-- `LongToStringConverter`: JSON转换器
-- 各种Controller: REST API接口
-
-**包依赖**:
-- API相关:
-  - `Microsoft.AspNetCore.OpenApi (8.0.0)`: OpenAPI规范
-  - `Swashbuckle.AspNetCore (6.5.0)`: Swagger UI
-
-- IoC相关:
-  - `Autofac (7.1.0)`: IoC容器  
-  - `Autofac.Extensions.DependencyInjection (8.0.0)`: 与ASP.NET Core集成
-
-- 日志相关:
-  - `Serilog.AspNetCore (8.0.0)`: ASP.NET Core集成
-  - `Serilog.Enrichers.Environment (2.3.0)`: 环境信息
-  - `Serilog.Enrichers.Thread (3.1.0)`: 线程信息
-  - `Serilog.Expressions (4.0.0)`: 表达式支持
-  - `Serilog.Settings.Configuration (8.0.0)`: 配置支持
-  - `Serilog.Sinks.Async (1.5.0)`: 异步写入
-  - `Serilog.Sinks.Console (5.0.1)`: 控制台输出
-  - `Serilog.Sinks.File (5.0.0)`: 文件输出
-
-**项目依赖**:
-- `Grassroots.Domain`: 使用领域模型
-- `Grassroots.Application`: 调用应用服务
-- `Grassroots.Infrastructure`: 运行时通过反射加载实现
-
-### 关键接口与实现关系
-
-#### 数据访问层
-- **接口**: `IApplicationDbContext` (Application层)
-- **实现**: `ApplicationDbContext` (Infrastructure层)
-- **依赖链**: `API` → `ApplicationDbContext` → `IApplicationDbContext`
-
-#### 仓储模式
-- **接口**: `IRepository<T>` (Domain层)
-- **实现**: `Repository<T>` (Infrastructure层) 
-- **依赖链**: `ApplicationService` → `IRepository<T>` → `Repository<T>`
-
-#### 领域事件
-- **接口**: `IDomainEventService` (Application层)
-- **实现**: `DomainEventService` (Infrastructure层)
-- **依赖链**: `AggregateRoot` → `IDomainEvent` → `IDomainEventService` → `DomainEventService`
-
-#### 事件总线
-- **接口**: `IEventBus` (Application层)
-- **实现**: `InMemoryEventBus` (Infrastructure层)
-- **依赖链**: `ApplicationService` → `IEventBus` → `InMemoryEventBus`
-
-#### 事件存储
-- **接口**: `IEventStore` (Application层)
-- **实现**: `EventStore` (Infrastructure层)
-- **依赖链**: `EventSourcedAggregateRoot` → `IEventSourcedAggregate` → `IEventStore` → `EventStore`
-
-#### ID生成
-- **接口**: `IIdGenerator` (Application层)
-- **实现**: `SnowflakeIdGenerator` (Infrastructure层)
-- **依赖链**: `Entity` → `IIdGenerator` → `SnowflakeIdGenerator`
-
-#### 服务发现
-- **接口**: `IServiceDiscovery` (Application层)
-- **实现**: `ConsulServiceDiscovery` (Infrastructure层)
-- **依赖链**: `Controller` → `IServiceDiscovery` → `ConsulServiceDiscovery`
-
-### 依赖注入机制
-
-#### 注册流程
-1. **Application层**:
-   - `DependencyInjection.cs`: 注册MediatR和应用服务
-   - `ApplicationModule.cs`: Autofac模块配置
-
-2. **Infrastructure层**:
-   - `DependencyInjection.cs`: 注册具体实现
-   - 各子系统模块注册
-
-3. **API层**:
-   - `Program.cs`: 通过反射动态加载Infrastructure层
-   ```csharp
-   var infrastructureAssembly = Assembly.Load("Grassroots.Infrastructure");
-   var infrastructureDIType = infrastructureAssembly.GetType("Grassroots.Infrastructure.DependencyInjection");
-   var registerMethod = infrastructureDIType?.GetMethod("RegisterInfrastructureServices");
-   registerMethod?.Invoke(null, new object[] { containerBuilder, builder.Configuration });
-   ```
-
-#### 依赖倒置示例
-1. **定义接口** (Application层):
-   ```csharp
-   public interface IEventBus
-   {
-       Task PublishAsync(IIntegrationEvent @event);
-       void Subscribe<T, TH>() where T : IIntegrationEvent where TH : IIntegrationEventHandler<T>;
-       void Unsubscribe<T, TH>() where T : IIntegrationEvent where TH : IIntegrationEventHandler<T>;
-   }
-   ```
-
-2. **实现接口** (Infrastructure层):
-   ```csharp
-   public class InMemoryEventBus : IEventBus
-   {
-       // 实现方法...
-   }
-   ```
-
-3. **使用接口** (Application层):
-   ```csharp
-   public class OrderService
-   {
-       private readonly IEventBus _eventBus;
-       
-       public OrderService(IEventBus eventBus)
-       {
-           _eventBus = eventBus;
-       }
-       
-       // 使用_eventBus...
-   }
-   ```
-
-### 数据库提供程序系统
-
-#### 组件关系
-- `DatabaseFactory`: 工厂类，根据配置创建不同数据库提供程序
-- `ApplicationDbContext`: 使用工厂创建的提供程序
-- `appsettings.json`: 配置数据库类型和连接字符串
-
-#### 依赖关系
-```
-Program.cs (加载配置) → DatabaseFactory → ApplicationDbContext → Entity 映射
-```
-
-### 事件系统详细依赖
-
-#### 领域事件流程
-1. `AggregateRoot`: 添加领域事件
-2. `DomainEventDispatcherBehavior`: MediatR行为拦截处理
-3. `IDomainEventService`: 分发事件到处理器
-4. `IDomainEventHandler<T>`: 处理特定类型事件
-
-#### 集成事件流程
-1. `IDomainEventHandler<T>`: 可能发布集成事件
-2. `IEventBus`: 发布集成事件
-3. `IIntegrationEventHandler<T>`: 处理集成事件
-
-#### 事件溯源流程
-1. `EventSourcedAggregateRoot`: 创建事件并应用状态变更
-2. `IEventStore`: 保存事件到存储
-3. `EventDescriptor`: 事件存储实体
-4. `LoadFromHistory`: 重建聚合状态
-
-## 技术栈
-
-- **.NET 8**: 最新的.NET平台
-- **Entity Framework Core**: ORM框架
-- **MediatR**: CQRS和中介者模式实现
-- **Autofac**: 依赖注入容器
-- **多数据库支持**: SQL Server, PostgreSQL, MySQL, SQLite
-- **Swagger/OpenAPI**: API文档生成
-- **Serilog**: 结构化日志
-- **Consul**: 服务注册与发现
-- **雪花算法**: 分布式ID生成
-
-## 如何运行
-
-1. 克隆仓库
-2. 确保已安装.NET 8 SDK
-3. 在项目根目录执行以下命令：
-
-```bash
-# 还原依赖
-dotnet restore
-
-# 编译项目
-dotnet build
-
-# 运行API项目
-dotnet run --project Grassroots.Api
-```
-
-默认情况下，API将在`http://localhost:5111`上运行。
-
-## 数据库配置
-
-项目默认使用SQL Server LocalDB。数据库设置在`Grassroots.Api/appsettings.json`中配置：
-
-```json
-"Database": {
-  "ProviderType": "SqlServer",
-  "SqlServerConnectionString": "Server=(localdb)\\mssqllocaldb;Database=GrassrootsDb;Trusted_Connection=True;MultipleActiveResultSets=true"
-}
-```
-
-要切换到不同的数据库，只需修改`ProviderType`值。确保对应的数据库驱动程序已正确安装。
-
-## 项目特点
-
-- **严格的DDD架构**: 遵循领域驱动设计原则
-- **CQRS模式**: 使用MediatR实现命令和查询分离
-- **依赖倒置**: 高层不依赖低层实现，依赖于抽象
-- **领域核心**: 领域层是项目核心，不依赖任何外部框架
-- **模块化**: 使用Autofac实现模块化依赖管理
-- **数据库无关**: 支持多种数据库系统，业务代码完全独立于数据库选择
-- **可测试性**: 架构设计便于单元测试和集成测试
-- **分布式支持**: 集成雪花算法和服务发现，支持分布式部署
-- **可观测性**: 结构化日志和健康检查，支持系统监控与诊断 
+[MIT](LICENSE) 

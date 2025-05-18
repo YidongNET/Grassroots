@@ -1,6 +1,0 @@
-@Grassroots.Api_HostAddress = http://localhost:5111
-
-GET {{Grassroots.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

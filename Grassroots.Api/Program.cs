@@ -1,71 +1,100 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Grassroots.Api.Converters;
-using Grassroots.Api.Extensions;
 using Grassroots.Application;
-using Grassroots.Application.Common.Interfaces;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+using Grassroots.Application.DependencyInjection;
+using Grassroots.Infrastructure;
+using Grassroots.Infrastructure.Data;
+using Grassroots.Infrastructure.DependencyInjection;
+using Grassroots.Infrastructure.ServiceDiscovery;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Serilog;
-using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 检查Serilog是否启用
+bool enableSerilog = true;
+if (builder.Configuration.GetSection("Serilog")["Enabled"] is string enabledStr)
+{
+    bool.TryParse(enabledStr, out enableSerilog);
+}
+
+if (enableSerilog)
+{
+    // 配置Serilog
+    Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .WriteTo.Console()
+        .CreateBootstrapLogger(); // 创建一个预启动的日志器
+}
+else
+{
+    // 配置一个空日志器
+    Log.Logger = new LoggerConfiguration().CreateLogger();
+}
 
 try
 {
-    // 创建初始日志记录器配置 - 仅控制台输出，用于应用启动前的日志
-    Log.Logger = new LoggerConfiguration()
-        .WriteTo.Console()
-        .CreateBootstrapLogger();
-    
-    Log.Information("启动Grassroots服务");
-    
-    var builder = WebApplication.CreateBuilder(args);
-    
-    // 获取Serilog启用状态
-    var serilogEnabled = builder.Configuration.GetValue<bool>("Serilog:Enabled", true);
-    
-    if (serilogEnabled)
+    if (enableSerilog)
     {
-        Log.Information("Serilog已启用，将使用完整的结构化日志记录");
-        
-        // 配置Serilog
-        // 使用基于配置的结构化日志，支持文件、控制台、数据库等多种输出
+        Log.Information("启动 Grassroots API 应用程序");
+    }
+
+    // 将Serilog配置为使用appsettings.json中的设置
+    if (enableSerilog)
+    {
         builder.Host.UseSerilog((context, services, configuration) => configuration
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
-            .Enrich.FromLogContext());
-    }
-    else
-    {
-        Log.Information("Serilog已禁用，将仅使用控制台基本日志");
-        
-        // 使用基本日志（仅控制台输出）
-        builder.Host.UseSerilog(new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .WriteTo.Console()
-            .CreateLogger());
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .Enrich.WithThreadId());
     }
 
-    // 使用Autofac作为IoC容器
-    // Autofac提供更灵活的依赖注入能力，支持模块化配置和高级注册特性
+    // 配置使用Autofac作为服务提供者工厂
     builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
-    // 注册控制器和其它ASP.NET Core服务
-    // 配置JSON序列化，将long类型转为string以避免JavaScript中的数值精度问题
+    // 配置Autofac容器
+    builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder => 
+    {
+        // 注册应用层模块
+        containerBuilder.RegisterModule(new ApplicationModule());
+        
+        // 注册基础设施层模块
+        containerBuilder.RegisterModule(new InfrastructureModule(builder.Configuration));
+        
+        // 如果Serilog未启用，注册一个空的ILogger
+        if (!enableSerilog)
+        {
+            containerBuilder.RegisterInstance(Log.Logger).As<Serilog.ILogger>().SingleInstance();
+        }
+    });
+
+    // 添加控制器并配置JSON序列化选项
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
-            // 配置System.Text.Json将长整型数字序列化为字符串
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            // 配置长整型转字符串
             options.JsonSerializerOptions.Converters.Add(new LongToStringConverter());
+            options.JsonSerializerOptions.Converters.Add(new NullableLongToStringConverter());
+            
+            // 设置其他JSON序列化选项
             options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
+        
     builder.Services.AddEndpointsApiExplorer();
-    
-        // 配置Swagger，添加XML注释
+
+    // 配置Swagger，添加XML注释
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new OpenApiInfo
@@ -80,52 +109,25 @@ try
                 Url = new Uri("https://github.com/YidongNET/Grassroots")
             }
         });
-
-        // 启用XML注释，用于Swagger文档
-        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
-
-        if (File.Exists(xmlPath))
-        {
-            options.IncludeXmlComments(xmlPath);
-        }
     });
 
-
-
-    // 添加健康检查
-    // 用于监控和报告应用程序的健康状态
-    builder.Services.AddAppHealthChecks();
-
-    // 配置Autofac容器
-    builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+    // 添加基础设施层服务
+    // 注意：这里仅配置DbContext，其他服务已通过Autofac模块注册
+    var databaseSection = builder.Configuration.GetSection("Database");
+    var databaseTypeStr = databaseSection["ProviderType"] ?? "SqlServer";
+    if (!Enum.TryParse<DatabaseType>(databaseTypeStr, true, out var databaseType))
     {
-        // 注册Application服务
-        // 应用层的服务直接注册
-        Grassroots.Application.DependencyInjection.RegisterApplicationServices(containerBuilder);
-
-        try
-        {
-            // 通过反射注册Infrastructure服务（依赖倒置）
-            // 这是依赖倒置原则(DIP)的关键实现：
-            // 1. API层不直接依赖于Infrastructure层
-            // 2. 通过反射动态加载Infrastructure层的注册方法
-            // 3. 这使得高层模块不依赖于低层模块的具体实现
-            var infrastructureAssembly = Assembly.Load("Grassroots.Infrastructure");
-            var infrastructureDIType = infrastructureAssembly.GetType("Grassroots.Infrastructure.DependencyInjection");
-            var registerMethod = infrastructureDIType?.GetMethod("RegisterInfrastructureServices");
-            registerMethod?.Invoke(null, new object[] { containerBuilder, builder.Configuration });
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "无法加载Infrastructure层");
-            
-            // 使用备用方法注册基本服务
-            // 当Infrastructure层无法加载时，提供基本功能以保证应用可以启动
-            builder.Services.AddDbContext<DbContext>(options => 
-                options.UseInMemoryDatabase("FallbackDb"));
-        }
-    });
+        databaseType = DatabaseType.SqlServer; // 默认使用SQL Server
+    }
+    string connectionStringName = "DefaultConnection";
+    Grassroots.Infrastructure.Data.DbContextFactory.ConfigureDbContext(
+        builder.Services, 
+        builder.Configuration, 
+        databaseType, 
+        connectionStringName);
+    
+    // 配置Consul选项
+    builder.Services.Configure<ConsulOptions>(builder.Configuration.GetSection("Consul"));
 
     var app = builder.Build();
 
@@ -135,55 +137,127 @@ try
     {
         // 开发环境启用Swagger文档
         app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    // 启用HTTPS重定向
-    app.UseHttpsRedirection();
-    
-    // 启用授权中间件
-    app.UseAuthorization();
-    
-    // 映射控制器路由
-    app.MapControllers();
-
-    // 使用健康检查中间件
-    // 提供/health端点用于监控系统
-    app.UseAppHealthChecks();
-
-    // 根据配置决定是否使用Consul服务注册
-    // Consul用于服务发现和服务网格
-    var consulEnabled = app.Configuration.GetValue<bool>("Consul:Enabled", false);
-    if (consulEnabled)
-    {
-        app.Logger.LogInformation("Consul服务注册已启用");
-        app.UseConsul();
-    }
-    else
-    {
-        app.Logger.LogInformation("Consul服务注册已禁用");
-    }
-
-    // 使用Serilog请求日志中间件（仅当Serilog完全启用时）
-    // 记录HTTP请求的详细信息，包括路径、方法、状态码和响应时间
-    if (serilogEnabled)
-    {
-        app.UseSerilogRequestLogging(options =>
+        app.UseSwaggerUI(c =>
         {
-            options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grassroots API v1");
+            c.RoutePrefix = "swagger";
         });
     }
 
-    // 启动应用程序
+    // 添加Serilog请求日志记录中间件
+    if (enableSerilog)
+    {
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000}ms";
+        });
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+    
+    // 注册Consul服务
+    var consulOptions = app.Services.GetRequiredService<IOptions<ConsulOptions>>().Value;
+    if (consulOptions.Enabled)
+    {
+        // 获取服务发现服务
+        var serviceDiscovery = app.Services.GetRequiredService<IServiceDiscovery>();
+        
+        // 应用启动时注册服务
+        if (enableSerilog)
+        {
+            Log.Information("正在注册服务到Consul: {ServiceName}", consulOptions.ServiceName);
+        }
+        
+        // 异步等待服务注册完成
+        await serviceDiscovery.RegisterServiceAsync();
+        
+        // 应用程序终止时注销服务
+        app.Lifetime.ApplicationStopping.Register(async () =>
+        {
+            if (enableSerilog)
+            {
+                Log.Information("正在从Consul注销服务: {ServiceName}", consulOptions.ServiceName);
+            }
+            await serviceDiscovery.DeregisterServiceAsync();
+        });
+    }
+
     app.Run();
 }
 catch (Exception ex)
 {
-    // 捕获并记录启动过程中的任何异常
-    Log.Fatal(ex, "应用程序启动失败");
+    if (enableSerilog)
+    {
+        Log.Fatal(ex, "应用程序启动失败");
+    }
 }
 finally
 {
-    // 确保日志被刷新并关闭
-    Log.CloseAndFlush();
+    if (enableSerilog)
+    {
+        Log.CloseAndFlush();
+    }
 }
+
+/// <summary>
+/// 将long类型转换为string的JSON转换器
+/// </summary>
+public class LongToStringConverter : JsonConverter<long>
+{
+    public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            return long.Parse(reader.GetString()!);
+        }
+        return reader.GetInt64();
+    }
+
+    public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
+}
+
+/// <summary>
+/// 将可空long类型转换为string的JSON转换器
+/// </summary>
+public class NullableLongToStringConverter : JsonConverter<long?>
+{
+    public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+        
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var stringValue = reader.GetString();
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                return null;
+            }
+            return long.Parse(stringValue);
+        }
+        
+        return reader.GetInt64();
+    }
+
+    public override void Write(Utf8JsonWriter writer, long? value, JsonSerializerOptions options)
+    {
+        if (value.HasValue)
+        {
+            writer.WriteStringValue(value.Value.ToString());
+        }
+        else
+        {
+            writer.WriteNullValue();
+        }
+    }
+}
+

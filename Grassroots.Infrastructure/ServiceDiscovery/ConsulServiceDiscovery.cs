@@ -1,231 +1,189 @@
-using Consul;
-using Grassroots.Application.Common.Interfaces;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Consul;
+using Microsoft.Extensions.Options;
+using Serilog;
 
-namespace Grassroots.Infrastructure.ServiceDiscovery
+namespace Grassroots.Infrastructure.ServiceDiscovery;
+
+/// <summary>
+/// Consul服务发现实现
+/// </summary>
+public class ConsulServiceDiscovery : IServiceDiscovery
 {
-    /// <summary>
-    /// Consul服务发现实现
-    /// </summary>
-    public class ConsulServiceDiscovery : IServiceDiscovery, IDisposable
-    {
-        private readonly ConsulOptions _options;
-        private readonly ILogger<ConsulServiceDiscovery> _logger;
-        private readonly ConsulClient _consulClient;
-        private readonly Random _random = new Random();
-        private bool _disposed = false;
+    private readonly ConsulOptions _options;
+    private readonly IConsulClient _consulClient;
+    private readonly ILogger _logger;
+    private readonly Random _random = new Random();
 
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="options">Consul配置选项</param>
-        /// <param name="logger">日志记录器</param>
-        public ConsulServiceDiscovery(IOptions<ConsulOptions> options, ILogger<ConsulServiceDiscovery> logger)
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="options">Consul配置选项</param>
+    /// <param name="logger">日志</param>
+    public ConsulServiceDiscovery(IOptions<ConsulOptions> options, ILogger logger)
+    {
+        _options = options.Value;
+        _logger = logger;
+        
+        // 创建Consul客户端
+        _consulClient = new ConsulClient(config =>
         {
-            _options = options.Value;
-            _logger = logger;
-            
+            config.Address = new Uri(_options.Address);
+        });
+    }
+
+    /// <summary>
+    /// 注册服务
+    /// </summary>
+    /// <returns>注册是否成功</returns>
+    public async Task<bool> RegisterServiceAsync()
+    {
+        try
+        {
             if (!_options.Enabled)
             {
-                _logger.LogWarning("Consul服务发现未启用");
-                return;
+                _logger.Information("Consul服务注册已禁用");
+                return false;
             }
             
-            // 创建Consul客户端
-            _consulClient = new ConsulClient(config =>
-            {
-                config.Address = new Uri(_options.ConsulAddress);
-            });
+            var serviceId = string.IsNullOrEmpty(_options.ServiceId)
+                ? $"{_options.ServiceName}-{_options.ServiceAddress}-{_options.ServicePort}"
+                : _options.ServiceId;
             
-            _logger.LogInformation("Consul服务发现已初始化, 地址: {ConsulAddress}", _options.ConsulAddress);
+            // 创建健康检查
+            var checkAddress = $"http://{_options.ServiceAddress}:{_options.ServicePort}{_options.HealthCheck}";
+            
+            var registration = new AgentServiceRegistration
+            {
+                ID = serviceId,
+                Name = _options.ServiceName,
+                Address = _options.ServiceAddress,
+                Port = _options.ServicePort,
+                Tags = _options.Tags,
+                Check = new AgentServiceCheck
+                {
+                    HTTP = checkAddress,
+                    Interval = TimeSpan.FromSeconds(_options.HealthCheckInterval),
+                    Timeout = TimeSpan.FromSeconds(_options.HealthCheckTimeout),
+                    DeregisterCriticalServiceAfter = _options.DeregisterCriticalServiceAfter 
+                        ? TimeSpan.FromMinutes(_options.DeregisterCriticalServiceAfterMinutes) 
+                        : TimeSpan.Zero
+                }
+            };
+            
+            // 注册服务
+            var result = await _consulClient.Agent.ServiceRegister(registration);
+            
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                _logger.Information("成功注册服务到Consul: {ServiceId}", serviceId);
+                return true;
+            }
+            
+            _logger.Warning("注册服务到Consul失败: {StatusCode}", result.StatusCode);
+            return false;
         }
-
-        /// <summary>
-        /// 注册服务
-        /// </summary>
-        /// <returns>注册结果</returns>
-        public async Task<bool> RegisterServiceAsync()
+        catch (Exception ex)
         {
-            if (!_options.Enabled || _consulClient == null)
+            _logger.Error(ex, "注册服务到Consul时发生异常");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 注销服务
+    /// </summary>
+    /// <returns>注销是否成功</returns>
+    public async Task<bool> DeregisterServiceAsync()
+    {
+        try
+        {
+            if (!_options.Enabled)
             {
-                _logger.LogWarning("Consul服务发现未启用，无法注册服务");
                 return false;
             }
             
-            try
+            var serviceId = string.IsNullOrEmpty(_options.ServiceId)
+                ? $"{_options.ServiceName}-{_options.ServiceAddress}-{_options.ServicePort}"
+                : _options.ServiceId;
+            
+            var result = await _consulClient.Agent.ServiceDeregister(serviceId);
+            
+            if (result.StatusCode == HttpStatusCode.OK)
             {
-                // 创建健康检查
-                var healthCheck = new AgentServiceCheck
-                {
-                    HTTP = $"http://{_options.ServiceAddress}:{_options.ServicePort}{_options.HealthCheck}",
-                    Interval = TimeSpan.FromSeconds(_options.Interval),
-                    Timeout = TimeSpan.FromSeconds(5),
-                    DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1)
-                };
-                
-                // 创建服务注册信息
-                var registration = new AgentServiceRegistration
-                {
-                    ID = _options.ServiceId,
-                    Name = _options.ServiceName,
-                    Address = _options.ServiceAddress,
-                    Port = _options.ServicePort,
-                    Tags = _options.Tags.ToArray(),
-                    Check = healthCheck
-                };
-                
-                // 注册服务
-                var result = await _consulClient.Agent.ServiceRegister(registration);
-                
-                if (result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    _logger.LogInformation("成功注册服务 {ServiceName} 到Consul", _options.ServiceName);
-                    return true;
-                }
-                else
-                {
-                    _logger.LogError("注册服务 {ServiceName} 到Consul失败，状态码: {StatusCode}", _options.ServiceName, result.StatusCode);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "注册服务 {ServiceName} 到Consul时发生异常", _options.ServiceName);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 注销服务
-        /// </summary>
-        /// <returns>注销结果</returns>
-        public async Task<bool> DeregisterServiceAsync()
-        {
-            if (!_options.Enabled || _consulClient == null)
-            {
-                _logger.LogWarning("Consul服务发现未启用，无法注销服务");
-                return false;
+                _logger.Information("成功从Consul注销服务: {ServiceId}", serviceId);
+                return true;
             }
             
-            try
-            {
-                var result = await _consulClient.Agent.ServiceDeregister(_options.ServiceId);
-                
-                if (result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    _logger.LogInformation("成功从Consul注销服务 {ServiceName}", _options.ServiceName);
-                    return true;
-                }
-                else
-                {
-                    _logger.LogError("从Consul注销服务 {ServiceName} 失败，状态码: {StatusCode}", _options.ServiceName, result.StatusCode);
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "从Consul注销服务 {ServiceName} 时发生异常", _options.ServiceName);
-                return false;
-            }
+            _logger.Warning("从Consul注销服务失败: {StatusCode}", result.StatusCode);
+            return false;
         }
-
-        /// <summary>
-        /// 发现服务
-        /// </summary>
-        /// <param name="serviceName">服务名称</param>
-        /// <returns>服务地址列表</returns>
-        public async Task<IList<string>> DiscoverServiceAsync(string serviceName)
+        catch (Exception ex)
         {
-            if (!_options.Enabled || _consulClient == null)
+            _logger.Error(ex, "从Consul注销服务时发生异常");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 发现服务
+    /// </summary>
+    /// <param name="serviceName">服务名称</param>
+    /// <returns>服务地址列表</returns>
+    public async Task<IList<string>> DiscoverServiceAsync(string serviceName)
+    {
+        try
+        {
+            var queryResult = await _consulClient.Health.Service(serviceName, string.Empty, true);
+            
+            if (queryResult.StatusCode != HttpStatusCode.OK)
             {
-                _logger.LogWarning("Consul服务发现未启用，无法发现服务");
+                _logger.Warning("从Consul查询服务失败: {StatusCode}", queryResult.StatusCode);
                 return new List<string>();
             }
             
-            try
-            {
-                // 获取健康的服务
-                var queryResult = await _consulClient.Health.Service(serviceName, string.Empty, true);
-                
-                if (queryResult.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    var services = queryResult.Response
-                        .Select(service => $"http://{service.Service.Address}:{service.Service.Port}")
-                        .ToList();
-                    
-                    _logger.LogInformation("从Consul发现服务 {ServiceName} 的 {Count} 个实例", serviceName, services.Count);
-                    
-                    return services;
-                }
-                else
-                {
-                    _logger.LogError("从Consul发现服务 {ServiceName} 失败，状态码: {StatusCode}", serviceName, queryResult.StatusCode);
-                    return new List<string>();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "从Consul发现服务 {ServiceName} 时发生异常", serviceName);
-                return new List<string>();
-            }
+            var services = queryResult.Response;
+            var serviceUrls = services
+                .Select(service => $"http://{service.Service.Address}:{service.Service.Port}")
+                .ToList();
+            
+            _logger.Debug("从Consul发现服务: {ServiceName}, 实例数: {Count}", 
+                serviceName, serviceUrls.Count);
+            
+            return serviceUrls;
         }
-
-        /// <summary>
-        /// 获取健康服务
-        /// </summary>
-        /// <param name="serviceName">服务名称</param>
-        /// <returns>健康的服务地址</returns>
-        public async Task<string> GetHealthyServiceAsync(string serviceName)
+        catch (Exception ex)
         {
-            if (!_options.Enabled || _consulClient == null)
-            {
-                _logger.LogWarning("Consul服务发现未启用，无法获取健康服务");
-                return null;
-            }
-            
-            var services = await DiscoverServiceAsync(serviceName);
-            
-            if (services.Count == 0)
-            {
-                _logger.LogWarning("未找到服务 {ServiceName} 的健康实例", serviceName);
-                return null;
-            }
-            
-            // 随机选择一个服务实例（简单的负载均衡）
-            var service = services[_random.Next(services.Count)];
-            _logger.LogInformation("选择服务 {ServiceName} 的实例: {ServiceUrl}", serviceName, service);
-            
-            return service;
+            _logger.Error(ex, "从Consul发现服务时发生异常: {ServiceName}", serviceName);
+            return new List<string>();
         }
+    }
 
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Dispose()
+    /// <summary>
+    /// 获取指定服务的随机可用实例（简单负载均衡）
+    /// </summary>
+    /// <param name="serviceName">服务名称</param>
+    /// <returns>服务地址</returns>
+    public async Task<string> GetServiceInstanceAsync(string serviceName)
+    {
+        var services = await DiscoverServiceAsync(serviceName);
+        
+        if (services.Count == 0)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _logger.Warning("没有可用的服务实例: {ServiceName}", serviceName);
+            return string.Empty;
         }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        /// <param name="disposing">是否正在释放托管资源</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                _consulClient?.Dispose();
-            }
-
-            _disposed = true;
-        }
+        
+        // 随机选择一个服务实例
+        var index = _random.Next(services.Count);
+        var serviceUrl = services[index];
+        
+        _logger.Debug("为{ServiceName}选择服务实例: {ServiceUrl}", serviceName, serviceUrl);
+        
+        return serviceUrl;
     }
 } 
