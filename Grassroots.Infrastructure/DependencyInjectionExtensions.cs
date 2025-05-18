@@ -15,11 +15,16 @@ namespace Grassroots.Infrastructure;
 
 /// <summary>
 /// 基础设施层依赖注入扩展
+/// 提供将基础设施层服务注册到DI容器的扩展方法
+/// 包括数据库上下文、仓储、工作单元、事件服务等基础组件的注册
+/// 支持不同数据库提供程序的配置和切换
 /// </summary>
 public static class DependencyInjectionExtensions
 {
     /// <summary>
     /// 添加基础设施服务
+    /// 注册所有基础设施层组件到标准.NET依赖注入容器
+    /// 作为应用程序启动时的主要注册入口
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">配置</param>
@@ -63,7 +68,15 @@ public static class DependencyInjectionExtensions
     
     /// <summary>
     /// 配置DbContext
+    /// 根据配置选择不同的数据库提供程序
+    /// 支持SQL Server、PostgreSQL和MySQL三种数据库
+    /// 设置每种数据库特定的选项和迁移程序集
     /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="configuration">配置</param>
+    /// <param name="databaseType">数据库类型</param>
+    /// <param name="connectionStringName">连接字符串名称</param>
+    /// <returns>服务集合</returns>
     public static IServiceCollection ConfigureDbContext(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -99,6 +112,9 @@ public static class DependencyInjectionExtensions
     
     /// <summary>
     /// 添加事件相关服务
+    /// 注册领域事件服务、事件溯源存储、事件总线等
+    /// 配置事件处理和分发的基础设施
+    /// 建立领域事件和集成事件之间的映射关系
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
@@ -127,6 +143,9 @@ public static class DependencyInjectionExtensions
     
     /// <summary>
     /// 添加ID生成器
+    /// 配置和注册雪花算法(Snowflake)ID生成器
+    /// 用于生成分布式环境下的唯一ID
+    /// 通过配置文件设置工作节点ID、数据中心ID等参数
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">配置</param>
@@ -191,6 +210,9 @@ public static class DependencyInjectionExtensions
     
     /// <summary>
     /// 添加服务发现
+    /// 配置Consul服务注册与发现功能
+    /// 允许应用在微服务架构中自动注册和发现服务
+    /// 通过配置文件设置服务名称、地址、健康检查等参数
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">配置</param>
