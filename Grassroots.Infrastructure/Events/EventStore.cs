@@ -46,7 +46,7 @@ public class EventRecord
 /// </summary>
 public class EventStore : IEventStore
 {
-    private readonly GrassrootsDbContext _dbContext;
+    private readonly AppDbContext _dbContext;
     private readonly IDomainEventService _domainEventService;
     
     /// <summary>
@@ -54,7 +54,7 @@ public class EventStore : IEventStore
     /// </summary>
     /// <param name="dbContext">数据库上下文</param>
     /// <param name="domainEventService">领域事件服务</param>
-    public EventStore(GrassrootsDbContext dbContext, IDomainEventService domainEventService)
+    public EventStore(AppDbContext dbContext, IDomainEventService domainEventService)
     {
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _domainEventService = domainEventService ?? throw new ArgumentNullException(nameof(domainEventService));

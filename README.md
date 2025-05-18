@@ -120,7 +120,7 @@ Grassroots是一个使用领域驱动设计(DDD)和洋葱架构构建的现代�
 
 - **Grassroots.Infrastructure** - 基础设施层
   - Data - 数据访问
-    - `GrassrootsDbContext` - EF Core数据上下文
+    - `AppDbContext` - EF Core数据上下文
     - `RepositoryBase<T>` - 通用仓储实现
     - `UnitOfWork` - 工作单元实现 
     - `DbContextFactory` - 多数据库支持工厂
@@ -199,7 +199,7 @@ Grassroots是一个使用领域驱动设计(DDD)和洋葱架构构建的现代�
 ### 基础设施层 (Grassroots.Infrastructure)
 ```
 ├── Data/                         # 数据访问
-│   ├── GrassrootsDbContext.cs    # EF Core数据上下文
+│   ├── AppDbContext.cs           # EF Core数据上下文
 │   ├── RepositoryBase.cs         # 通用仓储实现
 │   ├── UnitOfWork.cs             # 工作单元实现
 │   └── DbContextFactory.cs       # 多数据库支持工厂

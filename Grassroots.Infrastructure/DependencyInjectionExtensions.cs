@@ -86,7 +86,7 @@ public static class DependencyInjectionExtensions
         var connectionString = configuration.GetConnectionString(connectionStringName);
         
         // 根据数据库类型配置DbContext
-        services.AddDbContext<GrassrootsDbContext>(options =>
+        services.AddDbContext<AppDbContext>(options =>
         {
             switch (databaseType)
             {
@@ -136,7 +136,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped(typeof(IDomainEventHandler<>), typeof(DomainEventToIntegrationEventHandler<>));
         
         // 配置事件表
-        services.AddDbContext<GrassrootsDbContext>();
+        services.AddDbContext<AppDbContext>();
         
         return services;
     }
