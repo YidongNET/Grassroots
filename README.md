@@ -257,6 +257,235 @@ Grassroots/
     └── appsettings.json              # 应用配置
 ```
 
+## 详细依赖关系分析
+
+### 各层详细依赖关系
+
+#### Domain层 (核心领域层)
+
+**核心组件**:
+- `AggregateRoot`: 聚合根基类
+- `EventSourcedAggregateRoot`: 事件溯源聚合根
+- `IDomainEvent`: 领域事件接口
+- `IIntegrationEvent`: 集成事件接口
+
+**包依赖**:
+- `MediatR (12.2.0)`: 实现领域事件的发布/订阅和CQRS模式
+
+#### Application层 (应用服务层)
+
+**核心组件**:
+- `IApplicationDbContext`: 数据库上下文接口
+- `IDomainEventService`: 领域事件服务接口
+- `IEventBus`: 事件总线接口
+- `IEventStore`: 事件存储接口
+- `IIdGenerator`: ID生成器接口
+- MediatR行为: 领域事件分发、验证等
+
+**包依赖**:
+- `MediatR (12.2.0)`: 命令和查询处理
+- `Autofac (7.1.0)`: IoC容器
+- `Microsoft.Extensions.DependencyInjection.Abstractions (8.0.0)`: DI抽象
+
+**项目依赖**:
+- `Grassroots.Domain`: 依赖领域层定义的实体和事件
+
+#### Infrastructure层 (基础设施层)
+
+**核心组件**:
+- `ApplicationDbContext`: EF Core上下文实现
+- `DatabaseFactory`: 多数据库支持
+- `EventStore`: 事件存储实现
+- `InMemoryEventBus`: 内存事件总线
+- `Repository`: 仓储实现
+- `SnowflakeIdGenerator`: 雪花算法ID生成器
+- `ConsulServiceDiscovery`: 服务发现实现
+
+**包依赖**:
+- 数据库相关:
+  - `Microsoft.EntityFrameworkCore (8.0.1)`: ORM框架
+  - `Microsoft.EntityFrameworkCore.SqlServer (8.0.1)`: SQL Server支持
+  - `Npgsql.EntityFrameworkCore.PostgreSQL (8.0.0)`: PostgreSQL支持
+  - `Pomelo.EntityFrameworkCore.MySql (8.0.0)`: MySQL支持
+  - `Microsoft.EntityFrameworkCore.Sqlite (8.0.1)`: SQLite支持
+  - `Microsoft.EntityFrameworkCore.InMemory (8.0.1)`: 内存数据库
+  
+- IoC相关:
+  - `Autofac (7.1.0)`: IoC容器
+  - `Autofac.Extensions.DependencyInjection (8.0.0)`: 与ASP.NET Core集成
+
+- 日志相关:
+  - `Serilog (3.1.1)`: 结构化日志
+  - `Serilog.Enrichers.Environment (2.3.0)`: 环境信息
+  - `Serilog.Enrichers.Thread (3.1.0)`: 线程信息
+  - `Serilog.Sinks.Console (5.0.1)`: 控制台输出
+  - `Serilog.Sinks.File (5.0.0)`: 文件输出
+
+- 服务发现:
+  - `Consul (1.7.14.1)`: 服务注册与发现
+
+- 配置相关:
+  - `Microsoft.Extensions.Configuration.Abstractions (8.0.0)`
+  - `Microsoft.Extensions.Configuration.Binder (8.0.0)`
+  - `Microsoft.Extensions.Options (8.0.0)`
+
+**项目依赖**:
+- `Grassroots.Domain`: 实现领域接口
+- `Grassroots.Application`: 实现应用层接口
+
+#### API层 (接口层)
+
+**核心组件**:
+- `Program.cs`: 应用启动配置
+- `LongToStringConverter`: JSON转换器
+- 各种Controller: REST API接口
+
+**包依赖**:
+- API相关:
+  - `Microsoft.AspNetCore.OpenApi (8.0.0)`: OpenAPI规范
+  - `Swashbuckle.AspNetCore (6.5.0)`: Swagger UI
+
+- IoC相关:
+  - `Autofac (7.1.0)`: IoC容器  
+  - `Autofac.Extensions.DependencyInjection (8.0.0)`: 与ASP.NET Core集成
+
+- 日志相关:
+  - `Serilog.AspNetCore (8.0.0)`: ASP.NET Core集成
+  - `Serilog.Enrichers.Environment (2.3.0)`: 环境信息
+  - `Serilog.Enrichers.Thread (3.1.0)`: 线程信息
+  - `Serilog.Expressions (4.0.0)`: 表达式支持
+  - `Serilog.Settings.Configuration (8.0.0)`: 配置支持
+  - `Serilog.Sinks.Async (1.5.0)`: 异步写入
+  - `Serilog.Sinks.Console (5.0.1)`: 控制台输出
+  - `Serilog.Sinks.File (5.0.0)`: 文件输出
+
+**项目依赖**:
+- `Grassroots.Domain`: 使用领域模型
+- `Grassroots.Application`: 调用应用服务
+- `Grassroots.Infrastructure`: 运行时通过反射加载实现
+
+### 关键接口与实现关系
+
+#### 数据访问层
+- **接口**: `IApplicationDbContext` (Application层)
+- **实现**: `ApplicationDbContext` (Infrastructure层)
+- **依赖链**: `API` → `ApplicationDbContext` → `IApplicationDbContext`
+
+#### 仓储模式
+- **接口**: `IRepository<T>` (Domain层)
+- **实现**: `Repository<T>` (Infrastructure层) 
+- **依赖链**: `ApplicationService` → `IRepository<T>` → `Repository<T>`
+
+#### 领域事件
+- **接口**: `IDomainEventService` (Application层)
+- **实现**: `DomainEventService` (Infrastructure层)
+- **依赖链**: `AggregateRoot` → `IDomainEvent` → `IDomainEventService` → `DomainEventService`
+
+#### 事件总线
+- **接口**: `IEventBus` (Application层)
+- **实现**: `InMemoryEventBus` (Infrastructure层)
+- **依赖链**: `ApplicationService` → `IEventBus` → `InMemoryEventBus`
+
+#### 事件存储
+- **接口**: `IEventStore` (Application层)
+- **实现**: `EventStore` (Infrastructure层)
+- **依赖链**: `EventSourcedAggregateRoot` → `IEventSourcedAggregate` → `IEventStore` → `EventStore`
+
+#### ID生成
+- **接口**: `IIdGenerator` (Application层)
+- **实现**: `SnowflakeIdGenerator` (Infrastructure层)
+- **依赖链**: `Entity` → `IIdGenerator` → `SnowflakeIdGenerator`
+
+#### 服务发现
+- **接口**: `IServiceDiscovery` (Application层)
+- **实现**: `ConsulServiceDiscovery` (Infrastructure层)
+- **依赖链**: `Controller` → `IServiceDiscovery` → `ConsulServiceDiscovery`
+
+### 依赖注入机制
+
+#### 注册流程
+1. **Application层**:
+   - `DependencyInjection.cs`: 注册MediatR和应用服务
+   - `ApplicationModule.cs`: Autofac模块配置
+
+2. **Infrastructure层**:
+   - `DependencyInjection.cs`: 注册具体实现
+   - 各子系统模块注册
+
+3. **API层**:
+   - `Program.cs`: 通过反射动态加载Infrastructure层
+   ```csharp
+   var infrastructureAssembly = Assembly.Load("Grassroots.Infrastructure");
+   var infrastructureDIType = infrastructureAssembly.GetType("Grassroots.Infrastructure.DependencyInjection");
+   var registerMethod = infrastructureDIType?.GetMethod("RegisterInfrastructureServices");
+   registerMethod?.Invoke(null, new object[] { containerBuilder, builder.Configuration });
+   ```
+
+#### 依赖倒置示例
+1. **定义接口** (Application层):
+   ```csharp
+   public interface IEventBus
+   {
+       Task PublishAsync(IIntegrationEvent @event);
+       void Subscribe<T, TH>() where T : IIntegrationEvent where TH : IIntegrationEventHandler<T>;
+       void Unsubscribe<T, TH>() where T : IIntegrationEvent where TH : IIntegrationEventHandler<T>;
+   }
+   ```
+
+2. **实现接口** (Infrastructure层):
+   ```csharp
+   public class InMemoryEventBus : IEventBus
+   {
+       // 实现方法...
+   }
+   ```
+
+3. **使用接口** (Application层):
+   ```csharp
+   public class OrderService
+   {
+       private readonly IEventBus _eventBus;
+       
+       public OrderService(IEventBus eventBus)
+       {
+           _eventBus = eventBus;
+       }
+       
+       // 使用_eventBus...
+   }
+   ```
+
+### 数据库提供程序系统
+
+#### 组件关系
+- `DatabaseFactory`: 工厂类，根据配置创建不同数据库提供程序
+- `ApplicationDbContext`: 使用工厂创建的提供程序
+- `appsettings.json`: 配置数据库类型和连接字符串
+
+#### 依赖关系
+```
+Program.cs (加载配置) → DatabaseFactory → ApplicationDbContext → Entity 映射
+```
+
+### 事件系统详细依赖
+
+#### 领域事件流程
+1. `AggregateRoot`: 添加领域事件
+2. `DomainEventDispatcherBehavior`: MediatR行为拦截处理
+3. `IDomainEventService`: 分发事件到处理器
+4. `IDomainEventHandler<T>`: 处理特定类型事件
+
+#### 集成事件流程
+1. `IDomainEventHandler<T>`: 可能发布集成事件
+2. `IEventBus`: 发布集成事件
+3. `IIntegrationEventHandler<T>`: 处理集成事件
+
+#### 事件溯源流程
+1. `EventSourcedAggregateRoot`: 创建事件并应用状态变更
+2. `IEventStore`: 保存事件到存储
+3. `EventDescriptor`: 事件存储实体
+4. `LoadFromHistory`: 重建聚合状态
+
 ## 技术栈
 
 - **.NET 8**: 最新的.NET平台
@@ -276,6 +505,9 @@ Grassroots/
 3. 在项目根目录执行以下命令：
 
 ```bash
+# 还原依赖
+dotnet restore
+
 # 编译项目
 dotnet build
 
