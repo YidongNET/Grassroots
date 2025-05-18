@@ -10,6 +10,7 @@ using Serilog;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Models;
 
 try
 {
@@ -63,7 +64,34 @@ try
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    
+        // 配置Swagger，添加XML注释
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Grassroots API",
+            Version = "v1",
+            Description = "基于领域驱动设计的现代化应用框架API",
+            Contact = new OpenApiContact
+            {
+                Name = "YidongNET",
+                Email = "admin@yidongnet.com",
+                Url = new Uri("https://github.com/YidongNET/Grassroots")
+            }
+        });
+
+        // 启用XML注释，用于Swagger文档
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+
+        if (File.Exists(xmlPath))
+        {
+            options.IncludeXmlComments(xmlPath);
+        }
+    });
+
+
 
     // 添加健康检查
     // 用于监控和报告应用程序的健康状态
