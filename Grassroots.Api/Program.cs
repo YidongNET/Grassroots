@@ -15,6 +15,7 @@ using Serilog;
 using Serilog.Events;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Grassroots.Api.Middleware;
 
 // 创建Web应用构建器
 var builder = WebApplication.CreateBuilder(args);
@@ -179,6 +180,9 @@ try
     // 使用身份验证和授权
     // 控制API访问权限
     app.UseAuthorization();
+
+    // 添加全局异常处理中间件
+    app.UseGlobalExceptionHandler();
 
     // 映射控制器路由
     // 将请求路由到相应的控制器

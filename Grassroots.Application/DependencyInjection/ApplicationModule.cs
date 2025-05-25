@@ -3,6 +3,8 @@ using MediatR;
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Grassroots.Application.Mappings;
+using AutoMapper;
 
 namespace Grassroots.Application.DependencyInjection;
 
@@ -13,6 +15,18 @@ public class ApplicationModule : Autofac.Module
 {
     protected override void Load(ContainerBuilder builder)
     {
+        // 注册AutoMapper
+        builder.Register(c => new MapperConfiguration(cfg =>
+        {
+            cfg.AddMaps(typeof(MappingProfile).Assembly);
+        }))
+        .AsSelf()
+        .SingleInstance();
+
+        builder.Register(c => c.Resolve<MapperConfiguration>().CreateMapper(c.Resolve))
+        .As<IMapper>()
+        .InstancePerLifetimeScope();
+
         // 注册MediatR
         var applicationAssembly = Assembly.GetExecutingAssembly();
         var domainAssembly = typeof(Domain.Events.IDomainEvent).Assembly;

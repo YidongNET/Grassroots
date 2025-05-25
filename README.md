@@ -16,6 +16,7 @@ Grassroots是一个使用领域驱动设计(DDD)和洋葱架构构建的现代�
 - **Consul** - 服务注册与发现
 - **Swagger** - API文档
 - **System.Text.Json** - JSON序列化
+- **AutoMapper** - 对象映射
 
 ## 如何开始
 
@@ -389,6 +390,46 @@ Grassroots项目基于领域驱动设计(DDD)和洋葱架构实现，以下是�
    - Autofac替代默认容器
    - 模块化注册
    - 更灵活的生命周期管理
+
+7. **统一RESTful API响应规范**
+   - 所有API接口返回统一的JSON结构
+   - 全局异常处理，所有错误均返回标准JSON格式
+
+## API响应规范
+
+所有API接口响应均采用统一的RESTful风格JSON结构，示例：
+
+```
+{
+  "success": true,
+  "code": 200,
+  "message": "Success",
+  "data": { ... },
+  "timestamp": 1688888888888
+}
+```
+
+错误响应示例：
+
+```
+{
+  "success": false,
+  "code": 400,
+  "message": "参数错误",
+  "data": null,
+  "timestamp": 1688888888888
+}
+```
+
+### 说明
+- `success`：请求是否成功
+- `code`：HTTP状态码
+- `message`：提示信息
+- `data`：返回数据内容，错误时为null
+- `timestamp`：响应时间戳（毫秒）
+
+### 全局异常处理
+项目内置全局异常处理中间件，所有未捕获异常均返回统一JSON格式，便于前端统一处理。
 
 ## 配置特性
 
