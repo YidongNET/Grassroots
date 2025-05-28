@@ -30,7 +30,7 @@ Grassroots是一个使用领域驱动设计(DDD)和洋葱架构构建的现代�
 
 1. 克隆仓库：
    ```
-   git clone https://github.com/yourusername/Grassroots.git
+   git clone https://github.com/YidongNET/Grassroots.git
    ```
 
 2. 导航到项目目录：
