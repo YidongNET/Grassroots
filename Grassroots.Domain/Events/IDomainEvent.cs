@@ -1,14 +1,11 @@
-using MediatR;
-
 namespace Grassroots.Domain.Events;
 
 /// <summary>
 /// 领域事件接口
 /// 领域事件代表系统中发生的重要事情，通常是过去时态的动词
 /// 事件用于解耦系统组件，允许不同聚合/服务之间进行通信，而不产生直接依赖
-/// 实现了MediatR的INotification接口，用于通过中介者模式发布事件
 /// </summary>
-public interface IDomainEvent : INotification
+public interface IDomainEvent
 {
     /// <summary>
     /// 事件ID

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Grassroots.Domain.Events;
 
-namespace Grassroots.Domain.Entities;
+namespace Grassroots.Domain.Common;
 
 /// <summary>
 /// 支持事件溯源的聚合根基类
@@ -11,15 +11,9 @@ namespace Grassroots.Domain.Entities;
 /// </summary>
 /// <typeparam name="TKey">聚合根ID类型，可以是int、long、Guid等</typeparam>
 public abstract class EventSourcedAggregateRoot<TKey> : AggregateRoot<TKey>
+    where TKey : notnull, IEquatable<TKey>
 {
-    private readonly List<IDomainEvent> _uncommittedEvents = new List<IDomainEvent>();
-    
-    /// <summary>
-    /// 当前版本号
-    /// 每应用一个事件，版本号加1，用于乐观并发控制
-    /// 确保多个并发操作不会意外覆盖彼此的更改
-    /// </summary>
-    public int Version { get; protected set; }
+    private readonly List<IDomainEvent> _uncommittedEvents = new();
     
     /// <summary>
     /// 未提交事件列表
@@ -29,6 +23,14 @@ public abstract class EventSourcedAggregateRoot<TKey> : AggregateRoot<TKey>
     public IReadOnlyCollection<IDomainEvent> UncommittedEvents => _uncommittedEvents.AsReadOnly();
     
     /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="id">聚合根ID</param>
+    protected EventSourcedAggregateRoot(TKey id) : base(id)
+    {
+    }
+    
+    /// <summary>
     /// 应用事件到聚合根
     /// 这是事件溯源的核心方法，改变聚合根状态并记录事件
     /// 子类中的状态变更应通过此方法实现
@@ -36,12 +38,16 @@ public abstract class EventSourcedAggregateRoot<TKey> : AggregateRoot<TKey>
     /// <param name="event">要应用的领域事件</param>
     protected void ApplyEvent(IDomainEvent @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+        
         // 调用子类实现的Apply方法
         InvokeApply(@event);
         // 递增版本号，确保事件按序应用
-        Version++;
+        IncrementVersion();
         // 添加到未提交事件列表，等待持久化
         _uncommittedEvents.Add(@event);
+        // 添加到领域事件列表，用于发布
+        AddDomainEvent(@event);
     }
     
     /// <summary>
@@ -55,7 +61,9 @@ public abstract class EventSourcedAggregateRoot<TKey> : AggregateRoot<TKey>
         var method = GetType().GetMethod("Apply", new[] { @event.GetType() });
         if (method == null)
         {
-            throw new InvalidOperationException($"The Apply method for {@event.GetType().Name} was not found in the aggregate {GetType().Name}");
+            throw new InvalidOperationException(
+                $"The Apply method for {@event.GetType().Name} was not found in the aggregate {GetType().Name}. " +
+                $"Please ensure you have implemented an Apply method for this event type.");
         }
         method.Invoke(this, new object[] { @event });
     }
@@ -68,12 +76,16 @@ public abstract class EventSourcedAggregateRoot<TKey> : AggregateRoot<TKey>
     /// <param name="events">按时间顺序排列的历史事件列表</param>
     public void LoadFromHistory(IEnumerable<IDomainEvent> events)
     {
+        ArgumentNullException.ThrowIfNull(events);
+        
         foreach (var @event in events)
         {
+            ArgumentNullException.ThrowIfNull(@event);
+            
             // 应用事件但不添加到未提交事件列表
             // 因为这些事件已经被持久化过了
             InvokeApply(@event);
-            Version++;
+            IncrementVersion();
         }
     }
     

@@ -1,3 +1,5 @@
+using Grassroots.Domain.ValueObjects;
+
 namespace Grassroots.Application.Dtos;
 
 /// <summary>
@@ -13,20 +15,25 @@ public class UserDto
     /// <summary>
     /// 用户名
     /// </summary>
-    public required string UserName { get; set; }
+    public string Username { get; set; } = string.Empty;
 
     /// <summary>
-    /// 邮箱
+    /// 角色
     /// </summary>
-    public required string Email { get; set; }
+    public Role Role { get; set; }
 
     /// <summary>
-    /// 手机号
+    /// 用户状态
     /// </summary>
-    public string? PhoneNumber { get; set; }
+    public UserStatus Status { get; set; }
 
     /// <summary>
     /// 创建时间
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// 最后登录时间
+    /// </summary>
+    public DateTime? LastLoginAt { get; set; }
 } 

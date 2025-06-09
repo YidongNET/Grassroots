@@ -33,13 +33,13 @@ public class DomainEventToIntegrationEventHandler<TDomainEvent> : IDomainEventHa
     /// <summary>
     /// 处理领域事件
     /// </summary>
-    /// <param name="notification">领域事件</param>
+    /// <param name="domainEvent">领域事件</param>
     /// <param name="cancellationToken">取消标记</param>
-    public async Task Handle(TDomainEvent notification, CancellationToken cancellationToken)
+    public async Task HandleAsync(TDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling domain event {DomainEventType}", typeof(TDomainEvent).Name);
         
-        var integrationEvent = _mapper.MapToIntegrationEvent(notification);
+        var integrationEvent = _mapper.MapToIntegrationEvent(domainEvent);
         if (integrationEvent != null)
         {
             _logger.LogInformation("Publishing integration event {IntegrationEventType} from domain event {DomainEventType}",
