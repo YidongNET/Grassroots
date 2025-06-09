@@ -8,6 +8,6 @@ public interface IIdGenerator
     /// <summary>
     /// 生成新的ID
     /// </summary>
-    /// <returns>唯一ID</returns>
+    /// <returns>雪花算法生成的ID</returns>
     long NextId();
 } 

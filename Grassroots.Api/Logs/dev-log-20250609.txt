@@ -1,0 +1,30 @@
+[2025-06-09 17:47:25.741 +08:00 INF] Now listening on: http://localhost:5111 <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 17:47:25.751 +08:00 INF] Application started. Press Ctrl+C to shut down. <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 17:47:25.752 +08:00 INF] Hosting environment: Development <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 17:47:25.753 +08:00 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 17:47:28.032 +08:00 INF] Application is shutting down... <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:44:38.083 +08:00 INF] Now listening on: http://localhost:5111 <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:44:38.094 +08:00 INF] Application started. Press Ctrl+C to shut down. <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:44:38.094 +08:00 INF] Hosting environment: Development <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:44:38.095 +08:00 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:44:41.588 +08:00 INF] Application is shutting down... <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:48:43.607 +08:00 INF] Now listening on: http://localhost:5111 <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:48:43.617 +08:00 INF] Application started. Press Ctrl+C to shut down. <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:48:43.618 +08:00 INF] Hosting environment: Development <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:48:43.620 +08:00 INF] Content root path: C:\Users\admin\source\repos\Grassroots\Grassroots.Api <s:Microsoft.Hosting.Lifetime>
+[2025-06-09 18:48:45.705 +08:00 INF] Request starting HTTP/1.1 GET http://localhost:5111/swagger/index.html - null null <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:45.745 +08:00 INF] Request finished HTTP/1.1 GET http://localhost:5111/swagger/index.html - 200 null text/html;charset=utf-8 40.774ms <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:46.182 +08:00 INF] Request starting HTTP/1.1 GET http://localhost:5111/swagger/v1/swagger.json - null null <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:46.291 +08:00 INF] Request finished HTTP/1.1 GET http://localhost:5111/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 108.7136ms <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:51.529 +08:00 INF] Request starting HTTP/1.1 GET http://localhost:5111/api/IdGenerator - null null <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:51.536 +08:00 WRN] Failed to determine the https port for redirect. <s:Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware>
+[2025-06-09 18:48:51.539 +08:00 INF] Executing endpoint 'Grassroots.Api.Controllers.IdGeneratorController.GetNewId (Grassroots.Api)' <s:Microsoft.AspNetCore.Routing.EndpointMiddleware>
+[2025-06-09 18:48:51.553 +08:00 INF] Route matched with {action = "GetNewId", controller = "IdGenerator"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult GetNewId() on controller Grassroots.Api.Controllers.IdGeneratorController (Grassroots.Api). <s:Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker>
+[2025-06-09 18:48:51.558 +08:00 INF] 正在生成新的唯一ID <s:>
+[2025-06-09 18:48:51.559 +08:00 DBG] 生成的ID: 322688491177861120, 二进制表示: 0000010001111010011010110111100100011001110000110110000000000000 <s:>
+[2025-06-09 18:48:51.564 +08:00 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`3[[System.Int64, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int64, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'. <s:Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor>
+[2025-06-09 18:48:51.577 +08:00 INF] Executed action Grassroots.Api.Controllers.IdGeneratorController.GetNewId (Grassroots.Api) in 19.6377ms <s:Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker>
+[2025-06-09 18:48:51.579 +08:00 INF] Executed endpoint 'Grassroots.Api.Controllers.IdGeneratorController.GetNewId (Grassroots.Api)' <s:Microsoft.AspNetCore.Routing.EndpointMiddleware>
+[2025-06-09 18:48:51.581 +08:00 INF] HTTP GET /api/IdGenerator responded 200 in 46.1476ms <s:Serilog.AspNetCore.RequestLoggingMiddleware>
+[2025-06-09 18:48:51.584 +08:00 INF] Request finished HTTP/1.1 GET http://localhost:5111/api/IdGenerator - 200 null application/json; charset=utf-8 54.9981ms <s:Microsoft.AspNetCore.Hosting.Diagnostics>
+[2025-06-09 18:48:59.876 +08:00 INF] Application is shutting down... <s:Microsoft.Hosting.Lifetime>
